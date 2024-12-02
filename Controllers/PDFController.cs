@@ -307,14 +307,14 @@ namespace NDSPRO.Controllers
                         index++; // Increment the index
                     }
 
-
+                    String Test = "";
 
                     document.Add(table);
 
                     document.Add(new Paragraph("\n"));
 
                     //คำนวนราคารวม-----------------------------------
-
+                    
                     decimal totalAmountValue = 0;
 
                     // คำนวณยอดรวมจากข้อมูลใน GetProductTable
