@@ -309,14 +309,6 @@ namespace NDSPRO.Controllers
 
 
 
-
-
-                    // Example row
-                    //table.AddCell("1");
-                    //table.AddCell("เสื้อ Polo#01 - Eco Micro\nพิมพ์ sublimation ทั้งตัว\nสกรีน Logo 1 ตำแหน่ง\nขนาด 8*5.16 cm");
-                    //table.AddCell("17");
-                    //table.AddCell("395");
-
                     document.Add(table);
 
                     document.Add(new Paragraph("\n"));
@@ -331,6 +323,7 @@ namespace NDSPRO.Controllers
                         totalAmountValue += product.Price;
                     }
 
+                    var rateTest = "TESTTTTTTT";
                     // คำนวณ VAT 7%
                     decimal vat = totalAmountValue * 0.07m;
 
