@@ -1,0 +1,316 @@
+﻿@{
+    ViewBag.Title = "New Quotations";
+    Layout = "~/Views/Shared/_LayoutNewTopNav.cshtml";
+}
+<body ng-app="app" ng-controller="MyController" ng-init="GetPageLoad()">
+    <div class="container mt-3">
+        <h2 class="text-bold mb-4">ใบเสนอราคา (Quotation)</h2>
+
+
+        <!-- Quotation Type -->
+        <div class="mb-4 p-3 border rounded bg-light">
+
+            <div class="row">
+
+                <div class="mb-3 col-md-3">
+                    <label class="col-form-label text-bold">Quotation number</label>
+                    <input type="text" class="form-control" ng-model="QuoData.QuoNumber" >
+                </div>
+
+
+                <div class="mb-3 col-md-4">
+                    <label class="col-form-label text-bold">Quotation Type</label>
+                    <select ng-model="SelectedTypeSell"
+                            class="form-control"
+                            ng-options="type.typeRecapFrom + ' (' + type.codeChar + ')' for type in ListTypeSell">
+                    </select>
+                </div>
+                <div class="mb-3 col-md-4">
+                    @* <label class="col-form-label text-bold">Product Type</label>
+                        <select ng-model="SelectedTypePD"
+                        class="form-control"
+                        ng-options="x for x in ListTypePD" >
+                        </select> *@
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <!-- Customer Information Section -->
+        <div class="mb-4 p-3 border rounded bg-light">
+
+            <h4 class="text-bold">Customer Information</h4>
+            <div class="row">
+                <!-- Customer Name -->
+                <div class="mb-3 col-md-6">
+                    <label class="col-form-label text-bold">First name</label>
+                    <input type="text"
+                           class="form-control"
+                           ng-model="QuoData.CustomerName"
+                           placeholder="First name">
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="col-form-label text-bold">Last name</label>
+                    <input type="text"
+                           class="form-control"
+                           ng-model="QuoData.QuoLastname"
+                           placeholder="Last name">
+                </div>
+            </div>
+            <div class="row">
+                <!-- Company Name -->
+                <div class="mb-3 col-md-6">
+                    <label class="col-form-label text-bold">Company name</label>
+                    <input type="text"
+                           class="form-control"
+                           ng-model="QuoData.CompanyName"
+                           placeholder="Company name">
+                </div>
+
+            </div>
+            <div class="row">
+                <!-- Customer Address -->
+                <div class="mb-3 col-md-12">
+                    <label class="form-label text-bold">Address</label>
+                    <textarea class="form-control"
+                              ng-model="QuoData.CustomerAddress"
+                              placeholder="Address"></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    <label class="col-form-label text-bold">Provinces</label>
+                    <select ng-model="SelectedProvinces"
+                            class="form-control"
+                            ng-options="x for x in ListProvinces" ng-change="GetListDistricts(SelectedProvinces)"
+                            placeholder="Provinces">
+                    </select>
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="col-form-label text-bold">Districts</label>
+                    <select ng-model="SelectedDistricts"
+                            class="form-control"
+                            ng-options="x for x in ListDistricts" ng-change="GetListSub(SelectedDistricts,SelectedProvinces)"
+                            placeholder="Districts">
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    <label class="col-form-label text-bold">Sub Districts</label>
+                    <select ng-model="SelectedSub"
+                            class="form-control"
+                            ng-options="x for x in ListSub" ng-change="GetListZipcode(SelectedSub,SelectedDistricts)"
+                            placeholder="Sub Districts">
+                    </select>
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="col-form-label text-bold">Zipcode</label>
+                    <input type="text"
+                           class="form-control"
+                           ng-model="SZipcode"
+                           placeholder="zipCode" readonly>
+                </div>
+            </div>
+            <div class="row">
+
+                <!-- Tax ID -->
+                <div class="mb-3 col-md-6">
+                    <label class="col-form-label text-bold">Tax ID</label>
+                    <input type="text"
+                           class="form-control"
+                           ng-model="QuoData.QuoTaxID"
+                           placeholder="Tax ID"
+                           maxlength="13"
+                           onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="mb-3 col-md-4">
+                    <label class="col-form-label text-bold">Email</label>
+                    <input type="text"
+                           class="form-control"
+                           ng-model="QuoData.CustomerEmail"
+                           placeholder="Email">
+                </div>
+                <div class="mb-3 col-md-4">
+                    <label class="col-form-label text-bold">Tel.</label>
+                    <input type="text"
+                           class="form-control"
+                           ng-model="QuoData.CustomerPhone"
+                           maxlength="10"
+                           placeholder="Tel.">
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+    </div>
+
+
+    <div class="container mt-3">
+        <!-- Quotation Section -->
+        <div class="mb-4 p-3 border rounded bg-light">
+            <h4 class="text-bold">Quotation details</h4>
+            <div class="row">
+                <!-- Style Name Dropdown -->
+                <div class="mb-3 col-md-6">
+
+                    <label class="col-form-label text-bold">Style Name</label>
+                    <select ng-model="QuoData.StyleName"
+                            class="form-control"
+                            ng-options="x for x in ListDropSku"
+                            ng-change="GetSkuCode(QuoData.StyleName)">
+                    </select>
+
+
+                </div>
+                <div class="mb-3 col-md-6">
+
+                    <label class="col-form-label text-bold">Style Code</label>
+                    <input type="text" class="form-control" ng-model="skuCode" readonly>
+
+                </div>
+
+                @* <input type="text" id="totalPrice" class="form-control" ng-model="NewEntry.TotalPrice" ng-value="NewEntry.Quantity * NewEntry.PricePerUnit" readonly> *@
+                <div class="container mt-3">
+
+                    <!-- Form Section -->
+                    <div class="mb-4 p-3 border rounded bg-light">
+                        <!-- Row สำหรับ สี, ไซส์, จำนวน -->
+                        <div class="row align-items-center">
+                            <!-- Size Dropdown -->
+                            <div class="col-md-2">
+                                <label for="sizeSelect" class="form-label text-bold">เลือกไซส์:</label>
+                                <select id="sizeSelect" class="form-control" ng-model="NewEntry.SelectedSize" ng-options="x for x in ListSizes">
+                                    <option value="">เลือกไซส์</option>
+                                </select>
+                            </div>
+
+                            <!-- Color Dropdown -->
+                            <div class="col-md-2">
+                                <label for="colorSelect" class="form-label text-bold">เลือกสี:</label>
+                                <select id="colorSelect" class="form-control" ng-model="NewEntry.SelectedColor" ng-options=" x for x in ListColors">
+                                    <option value="">เลือกสี</option>
+                                </select>
+                            </div>
+
+                            <!-- Quantity Input -->
+                            <div class="col-md-2">
+                                <label for="quantityInput" class="form-label text-bold">จำนวน:</label>
+                                <input type="number" id="quantityInput" class="form-control" ng-model="NewEntry.Quantity" placeholder="กรอกจำนวนสินค้า" min="0">
+
+                            </div>
+
+
+                            <!-- Price Input -->
+                            <div class="col-md-2">
+                                <label for="priceInput" class="form-label text-bold">ราคา (ต่อหน่วย):</label>
+                                <input type="number" id="priceInput" class="form-control" ng-model="NewEntry.PricePerUnit" placeholder="กรอกราคาต่อหน่วย" min="0">
+
+                            </div>
+
+
+                            <!-- Total Price Display -->
+                            <div class="col-md-2">
+                                <label for="totalPrice" class="form-label text-bold">ราคารวม:</label>
+                                <input type="text" id="totalPrice" class="form-control" ng-model="NewEntry.TotalPrice" ng-value="NewEntry.Quantity * NewEntry.PricePerUnit" readonly>
+                            </div>
+
+                            <!-- Add Button -->
+
+                            <div class="col-md-2 d-flex align-items-end mt-3">
+                                <button class="btn btn-primary w-100" ng-click="AddEntry()">เพิ่ม</button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Table Section -->
+                    <div class="mt-4">
+                        <h3 class="text-bold">รายการสินค้า</h3>
+                        <table class="table table-striped dt-responsive nowrap w-100">
+                            <thead>
+                                <tr>
+                                    <th>Style name</th>
+                                    <th>SKU</th>
+                                    <th>ไซส์</th>
+                                    <th>สี</th>
+                                    <th>จำนวน</th>
+                                    <th>ราคา (ต่อหน่วย)</th>
+                                    <th>ราคารวม</th>
+                                    <th>การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="entry in Entries">
+                                    <td>{{entry.SelectedStyleName}}</td>
+                                    <td>{{entry.SelectedSku}}</td>
+                                    <td>{{entry.SelectedSize}}</td>
+                                    <td>{{entry.SelectedColor}}</td>
+                                    <td>{{entry.Quantity}}</td>
+                                    <td>{{entry.PricePerUnit | number:2}}</td>
+                                    <td>{{entry.Quantity * entry.PricePerUnit | number:2}}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" ng-click="RemoveEntry($index)">ลบ</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- Label แสดงยอดรวม -->  @*   ng-model="TotalSum" *@
+
+                        @* Map total price & total sum *@
+                        <div class="row">
+                            <!-- Customer Name -->
+                            <div class="mb-3 col-md-3">
+
+                                <label class="col-form-label text-bold">Total Price :</label>
+                                <input type="text" ng-model="QuoData.TotalPrice"
+                                       class="form-control"
+                                       value="{{QuoData.TotalPrice | number:2}}"
+                                       readonly>
+                            </div>
+                            <div class="mb-3 col-md-3">
+                                <label class="col-form-label text-bold">Total Qty :</label>
+                                <input type="text"
+                                       class="form-control"
+                                       ng-model="QuoData.TotalQty"
+                                       readonly>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <!-- Notes Input -->
+                    <div class="mb-3 col-md-12">
+                        <label class="col-form-label text-bold">หมายเหตุ</label>
+                        <textarea class="form-control"
+                                  ng-model="QuoData.Remark"
+                                  placeholder="Remark"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Action Buttons -->
+    <div class="mt-4">
+        <button class="btn btn-primary" ng-click="SaveQuotation(QuoData,SelectedProvinces,
+                                        SelectedDistricts,SelectedSub,SZipcode,skuCode,SelectedTypeSell,Entries)">
+            บันทึกข้อมูล
+        </button>
+            <button class="btn btn-secondary" ng-click="ClearForm()">ล้างข้อมูล</button>
+        <button class="btn btn-danger" ng-click="PrintPDF(QuoData.QuoNumber)">พิมพ์เป็น PDF</button>
+    </div>
+
+</body>
