@@ -1,8 +1,11 @@
 ﻿@{
-    ViewBag.Title = "New Quotations";
+    ViewBag.Title = "Edit Quotations";
     Layout = "~/Views/Shared/_LayoutNewTopNav.cshtml";
 }
-<body ng-app="app" ng-controller="MyController" ng-init="GetPageLoad()">
+
+ @model QuotationViewModel // เอา Model มารับ 
+
+<body ng-app="app" ng-controller="MyController" ng-init="GetdataQuoForEdit('@Model.QuotationNumber')">
     <div class="container mt-3">
         <h2 class="text-bold mb-4">ใบเสนอราคา (Quotation)</h2>
 
@@ -234,7 +237,7 @@
 
                         </div>
                     </div>
-                   
+                 @*    {{Entries}} *@
                     <!-- Table Section -->
                     <div class="mt-4">
                         <h3 class="text-bold">รายการสินค้า</h3>
@@ -251,6 +254,20 @@
                                     <th>การจัดการ</th>
                                 </tr>
                             </thead>
+                           @*  <tbody>
+                                <tr ng-repeat="entry in Entries">
+                                    <td>{{entry.productName}}</td>
+                                    <td>{{entry.skuCode}}</td>
+                                    <td>{{entry.size}}</td>
+                                    <td>{{entry.color}}</td>
+                                    <td>{{entry.qty}}</td>
+                                    <td>{{entry.price | number:2}}</td>
+                                    <td>{{entry.qty * entry.price | number:2}}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" ng-click="RemoveEntry($index)">ลบ</button>
+                                    </td>
+                                </tr>
+                            </tbody> *@
                             <tbody>
                                 <tr ng-repeat="entry in Entries">
                                     <td>{{entry.SelectedStyleName}}</td>
@@ -303,13 +320,12 @@
             </div>
         </div>
     </div>
-    <!-- Action Buttons -->
+    <!-- Action Buttons // controller Update-->
     <div class="mt-4">
-        <button class="btn btn-primary" ng-click="SaveQuotation(QuoData,SelectedProvinces,
-                                        SelectedDistricts,SelectedSub,SZipcode,skuCode,SelectedTypeSell,Entries)">
-            Save
+        <button class="btn btn-primary" ng-click="UpdateQuotation()">
+           Save
         </button>
-            @* <button class="btn btn-secondary" ng-click="ClearForm()">ล้างข้อมูล</button> *@
+          @*   <button class="btn btn-secondary" ng-click="ClearForm()">ล้างข้อมูล</button> *@
         <button class="btn btn-danger" ng-click="Cancel()">Cancel</button>
     </div>
 

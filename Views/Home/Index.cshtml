@@ -16,13 +16,13 @@
             <h1 class="page-title">Quotation Informations</h1>
 
 
-            {{ListQuo}}
+            @* {{ListQuo}} *@
         </div>
     </div>
     <!-- end page title -->
 
 
-    <div class="mb-1 col-md-3">
+    <div class="mb-1 col-md-12 text-end">
 
         <button class="btn btn-secondary" type="button" ng-click="CreateQuo()"> New </button>
     </div>
@@ -32,13 +32,13 @@
             <div class="card">
                 <div class="card-body">
 
-                    <h4 class="header-title">Buttons example</h4>
+               @*      <h4 class="header-title">Buttons example</h4>
                     <p class="text-muted font-14">
                         The Buttons extension for DataTables provides a common set of options, API methods and styling to display buttons on a page
                         that will interact with a DataTable. The core library provides the based framework upon which plug-ins can built.
-                    </p>
+                    </p> *@
 
-                    <ul class="nav nav-tabs nav-bordered mb-3">
+                   @*  <ul class="nav nav-tabs nav-bordered mb-3">
                         <li class="nav-item">
                             <a href="#buttons-table-preview" data-bs-toggle="tab" aria-expanded="false" class="nav-link active">
                                 Preview
@@ -49,30 +49,38 @@
                                 Code
                             </a>
                         </li>
-                    </ul> <!-- end nav-->
+                    </ul> *@ <!-- end nav-->
                     <div class="tab-content">
                         <div class="tab-pane show active" id="buttons-table-preview">
-                            <table id="datatable-buttons" class="table table-striped dt-responsive nowrap w-100">
+                            <table id="datatable-buttons" class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>quotationNumber</th>
-                                        <th>orderStatus</th>
-                                        <th>Office</th>
-                                        <th>Age</th>
-                                        <th>Start date</th>
-                                        <th>Salary</th>
+                                        <th class="text-center">Quotation Number</th>
+                                        <th class="text-center">Quotation Status</th>
+                                        <th class="text-center">Quotation Type</th>
+                                        <th class="text-center">Customer Name</th>
+                                        <th class="text-center">Customer Lastname</th>
+                                        <th class="text-center">Create date</th>
+                                        <th class="text-center">Edit</th>
+                                        <th class="text-center">Print PDF</th>
                                     </tr>
                                 </thead>
 
 
                                 <tbody>
                                     <tr ng-repeat="x in ListQuo">
-                                        <td>{{x.quotationNumber}}</td>
-                                        <td>{{x.orderStatus}}</td>
-                                        <td>Edinburgh</td>
-                                        <td>61</td>
-                                        <td>2011/04/25</td>
-                                        <td>$320,800</td>
+                                        <td class="text-center">{{x.quotationNumber}}</td>
+                                        <td class="text-center">{{x.quoStatus}}</td>
+                                        <td class="text-center">{{x.quoType}}</td>
+                                        <td class="text-center">{{x.customerName}}</td>
+                                        <td class="text-center">{{x.quoLastname}}</td>
+                                        <td class="text-center">{{x.createDate  | date: 'dd/MM/yyyy'}}</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-primary" ng-click="editQuotation(x.quotationNumber)">Edit</button>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-danger" ng-click="PrintPDF(x.quotationNumber)">PDF</button>
+                                        </td>
                                     </tr>
                                   
                                 
@@ -146,8 +154,9 @@
             </div> <!-- end card -->
         </div><!-- end col-->
     </div> <!-- end row-->
+
     <!-- start page title -->
-    <div class="row">
+    @* <div class="row">
         <div class="col-12">
             <div class="page-title-box">
                 <div class="page-title-right">
@@ -169,10 +178,10 @@
                 <h4 class="page-title">Dashboard</h4>
             </div>
         </div>
-    </div>
+    </div> *@
     <!-- end page title -->
 
-    <div class="row">
+   @*  <div class="row">
         <div class="col-xl-5 col-lg-6">
 
             <div class="row">
@@ -275,10 +284,10 @@
             </div> <!-- end card-->
 
         </div> <!-- end col -->
-    </div>
+    </div> *@
     <!-- end row -->
 
-    <div class="row">
+   @*  <div class="row">
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-body">
@@ -397,10 +406,10 @@
                 </div> <!-- end card-body-->
             </div> <!-- end card-->
         </div> <!-- end col-->
-    </div>
+    </div> *@
     <!-- end row -->
-
-    <div class="row">
+    <!-- Recent activity -->
+    @* <div class="row">
         <div class="col-xl-6 col-lg-12 order-lg-2 order-xl-1">
             <div class="card">
                 <div class="card-body">
@@ -682,7 +691,7 @@
         </div>
         <!-- end col -->
 
-    </div>
+    </div> *@
     <!-- end row -->
 
 

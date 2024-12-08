@@ -3,6 +3,8 @@
 namespace NDSPRO.Models
 {
     [Table("YMTG_USER")]
+    //[Table("YMTG_YPTUSER")] DB YMTGROUPDB
+
     public class YMTGUser
     {
         public int Id { get; set; } // Assuming Id is an integer

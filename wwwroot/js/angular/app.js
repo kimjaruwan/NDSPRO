@@ -1,7 +1,7 @@
 ﻿
 var app = angular.module('app', []);
 
-app.controller('MyController', function ($scope, $http) {
+app.controller('MyController', function ($scope, $http, $window) {
     // List for Dropdowns
 
     $scope.QuoData = {
@@ -35,11 +35,7 @@ app.controller('MyController', function ($scope, $http) {
         QuoRemark: ''
         /*        QuoTaxID:''*/
 
-
-
     };
-
-
 
 
     $scope.ListSizes = [];
@@ -62,12 +58,14 @@ app.controller('MyController', function ($scope, $http) {
         PricePerUnit: 0,
         TotalPrice: 0
     };
+
     $http.post('/Home/CheckUser')
         .then(function (response) {
             $scope.userData = response.data; // เก็บข้อมูลที่ดึงมาในตัวแปร 
 
             console.log(response.data);
         });
+
 
     $scope.CreateQuo = function () {
         // Redirect to CreateQuo View
@@ -259,6 +257,9 @@ app.controller('MyController', function ($scope, $http) {
                         icon: "success",
                         title: "Save Complete",
                         text: "New Quotation : " + QuoNumber + " Created."
+                    }).then(function () {
+                        // Redirect ไปหน้า index 
+                        $window.location.href = "/Home/Index";
                     });
                 })
                 .catch(function (error) {
@@ -280,7 +281,7 @@ app.controller('MyController', function ($scope, $http) {
         // รับค่า QuotationNumber จากข้อมูลที่กรอกโดยผู้ใช้
         console.log(NumberQuo);
         var quotationNumber = NumberQuo;
-       /* var quotationNumber = $scope.QuoData.QuoNumber;*/
+        /* var quotationNumber = $scope.QuoData.QuoNumber;*/
 
         // ตรวจสอบว่ามี QuotationNumber
         if (!quotationNumber) {
@@ -297,17 +298,12 @@ app.controller('MyController', function ($scope, $http) {
 
 
 
-
-
     $scope.ValidateTaxID = function () {
         //$scope.QuoData.CustomerTaxID = $scope.QuoData.CustomerTaxID.replace(/\D/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลข
         //if ($scope.QuoData.CustomerTaxID.length > 13) {
         //    $scope.QuoData.CustomerTaxID = $scope.QuoData.CustomerTaxID.slice(0, 13); // จำกัดความยาวไม่เกิน 13 หลัก
         //}
     };
-
-
-
 
 
     $scope.GetPageLoad = function () {
@@ -360,7 +356,7 @@ app.controller('MyController', function ($scope, $http) {
             });
     }
 
-    $scope.GetListZipcode = function (SelectedSub, SelectedDistricts,) {
+    $scope.GetListZipcode = function (SelectedSub, SelectedDistricts) {
 
         console.log(SelectedSub, SelectedDistricts);
         // ส่งข้อมูลไปยัง Backend
@@ -387,10 +383,217 @@ app.controller('MyController', function ($scope, $http) {
             .then(function (response) {
                 $scope.ListQuo = response.data; // เก็บผลลัพธ์จาก Backend
                 console.log($scope.ListQuo);
+
             })
             .catch(function (error) {
                 console.error("Error:", error);
             });
     }
+
+    // ฟังก์ชัน Edit เพื่อเปลี่ยนเส้นทางไปยังหน้าที่ต้องการแก้ไข
+    $scope.editQuotation = function (quotationNumber) {
+        // ไปยังหน้าแก้ไขข้อมูล โดยใช้ quotationNumber เป็นพารามิเตอร์
+
+        $window.location.href = '/Home/EditQuo?quotationNumber=' + quotationNumber;
+    }
+
+    //$scope.GetdataQuoForEdit = function (searchQuo) {
+    //    console.log(searchQuo);
+
+    //    // ส่งข้อมูลไปยัง Backend
+    //    $http.post('/Home/GetdataQuoForEdit', {
+    //        QuotationNumber: searchQuo
+    //    })
+    //        .then(function (response) {
+    //            $scope.ListDistricts = response.data;
+    //        })
+    //        .catch(function (error) {
+    //            console.error("Error:", error);
+    //        });
+
+
+
+    //}
+
+
+
+    $scope.GetdataQuoForEdit = function (searchQuo) {
+        console.log(searchQuo);
+        $scope.GetPageLoad();
+
+        $http.post('/Home/GetdataQuoForEdit', {
+            QuotationNumber: searchQuo
+        }).then(function (response) {
+
+
+            /* $scope.SelectedProvinces = response.data.provinces;*/
+
+            $scope.QuoData = {
+                QuoNumber: response.data.quotationNumber,
+                CustomerName: response.data.customerName,
+                /* CustFirstname: response.data.custFirstname,*/
+                /* CustLastname: response.data.custLastname,*/
+                CompanyName: response.data.quoCompanyName,
+                OrderDate: new Date().toISOString().slice(0, 10), // รูปแบบ yyyy-MM-dd
+                OrderStatus: 'Processing', //กำหนดให้เป็น Processing
+                ShipDate: new Date(new Date().setDate(new Date().getDate() + 3)).toISOString().slice(0, 10), // วันที่ปัจจุบัน + 3 วันในรูปแบบ yyyy-MM-dd
+                TotalQty: response.data.totalQty,
+                TotalPrice: response.data.totalPrice,
+                CustomerEmail: response.data.customerEmail,
+                CustomerAddress: response.data.customerAddress,
+                CustomerTaxID: response.data.customerTaxID,
+                CustomerAddressTax: response.data.customerAddressTax,
+                CustomerPhone: response.data.customerPhone,
+                /* Remark: response.data.remark,*/
+                CreateBy: 'jaruwan.s',// ***
+                CreateDate: new Date().toISOString().slice(0, 10),// รูปแบบ dd/MM/yyyy HH:mm:ss
+                StyleName: response.data.styleName,// ไม่มี MAP    
+                QuoType: response.data.quoType,
+                QuoLastname: response.data.quoLastname,
+                // QuoCompanyName: response.data.quoCompanyName,
+                //QuoProvince: response.data.quoProvince,
+                //QuoDistricts: response.data.quoDistricts,
+                //QuoSubDistricts: response.data.quoSubDistricts,
+                //QuoZipCode: response.data.quoZipCode,
+                QuoStatus: response.data.quoStatus,
+                Remark: response.data.quoRemark,
+                QuoTaxID: response.data.quoTaxID
+
+            };
+
+            $scope.SelectedTypeSell = $scope.QuoData.QuoType;
+            console.log($scope.QuoData.QuoType);
+
+            $scope.SelectedProvinces = response.data.quoProvince;
+
+            $scope.GetListDistricts(response.data.quoProvince);
+
+
+
+            $scope.SelectedDistricts = response.data.quoDistricts;
+            console.log($scope.SelectedDistricts);
+
+
+            $scope.GetListSub(response.data.quoDistricts, response.data.quoProvince)
+
+            $scope.SelectedSub = response.data.quoSubDistricts;
+
+
+
+            $scope.SZipcode = response.data.quoZipCode;
+
+            /*console.log("TEST" + $scope.SelectedProvinces)*/
+
+            $http.post('/Home/GetForEditProduct', {
+                QuotationNumber: searchQuo
+            }).then(function (response) {
+                console.log(response.data);
+
+                // ตรวจสอบว่า response.data เป็น Array หรือไม่
+                if (Array.isArray(response.data)) {
+                    $scope.Entries = response.data.map(entry => ({
+                        SelectedStyleName: entry.productName,
+                        SelectedSku: entry.sku,
+                        SelectedSize: entry.size,
+                        SelectedColor: entry.color,
+                        Quantity: entry.qty,
+                        PricePerUnit: entry.price,
+                        TotalPrice: entry.qty * entry.price
+                    }));
+                } else {
+                    console.error("Unexpected data format:", response.data);
+                    $scope.Entries = [];
+                }
+
+                $scope.CalculateTotalSum();
+                $scope.CalculateQty();
+            });
+
+
+        })
+    }
+            
+    // Function Update
+
+    $scope.UpdateQuotation = function () {
+        console.log("TESTTTTTTTTTTTTT")
+        // Validate before sending
+        if (!$scope.QuoData.QuoNumber || !$scope.QuoData.CustomerName || !$scope.Entries.length) {
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Please fill in all required fields!"
+            });
+            return;
+        }
+
+        // Prepare data for update
+        const updateData = {
+            QuotationNumber: $scope.QuoData.QuoNumber,
+            CustomerName: $scope.QuoData.CustomerName,
+            QuoLastname: $scope.QuoData.QuoLastname,
+            QuoCompanyName: $scope.QuoData.CompanyName,
+            OrderDate: $scope.QuoData.OrderDate,
+            ShipDate: $scope.QuoData.ShipDate,
+            TotalQty: $scope.QuoData.TotalQty,
+            TotalPrice: $scope.QuoData.TotalPrice,
+            Remark: $scope.QuoData.Remark,
+            CustomerAddress: $scope.QuoData.CustomerAddress,
+            CustomerPhone: $scope.QuoData.CustomerPhone,
+            QuoTaxID: $scope.QuoData.QuoTaxID,
+            CustomerEmail: $scope.QuoData.CustomerEmail,
+            QuoProvince: $scope.SelectedProvinces,
+            QuoDistricts: $scope.SelectedDistricts,
+            QuoSubDistricts: $scope.SelectedSub,
+            QuoZipCode: $scope.SZipcode,
+            Entries: $scope.Entries.map(entry => ({       
+                ProductName: entry.SelectedStyleName,
+                Qty: entry.Quantity,
+                Size: entry.SelectedSize,
+                Color: entry.SelectedColor,
+                Price: entry.PricePerUnit
+            }))
+        };
+
+
+        // Send update request
+        $http.post('/Home/UpdateQuotation', updateData)
+            .then(function (response) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Update Complete",
+                    text: "Quotation updated successfully."
+                }).then(function () {
+                    $window.location.href = "/Home/Index";
+                });
+            })
+            .catch(function (error) {
+                console.error("Update Error:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Failed to update quotation."
+                });
+            });
+    };
+
+    
+    $scope.Cancel = function () {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Changes will not be saved!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, cancel!',
+            cancelButtonText: 'No, stay here'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $window.location.href = "/Home/Index";
+            }
+        });
+    };
+
 
 });

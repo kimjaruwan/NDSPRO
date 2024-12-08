@@ -14,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 //using Newtonsoft.Json.Linq;
 using Azure.Core;
 using System.Drawing.Drawing2D;
+using iText.Svg.Renderers.Path.Impl;
+using iText.StyledXmlParser.Jsoup.Nodes;
 
 namespace NDSPRO.Controllers
 {
@@ -86,6 +88,17 @@ namespace NDSPRO.Controllers
         {
 
             return View();
+        }
+
+        public IActionResult EditQuo(string quotationNumber)
+        {
+        
+            var model = new QuotationViewModel
+            {
+                QuotationNumber = quotationNumber
+            };
+
+            return View(model);
         }
 
         [HttpGet]
@@ -271,10 +284,12 @@ namespace NDSPRO.Controllers
         //    return Ok();
         //}
 
+        //แก้ไข Model
         [HttpPost]
         public ActionResult SaveToProductTable([FromBody] List<ProductList> Entries)
 
         {
+
             if (Entries != null)
             {
                 foreach (var entry in Entries)
@@ -313,8 +328,7 @@ namespace NDSPRO.Controllers
                             }
                             else
                             {
-                                // จัดการกรณีที่การแปลงล้มเหลว
-                                // เช่น กำหนดค่าเริ่มต้นหรือแจ้งเตือนผู้ใช้
+                               //แปลงค่่าไม่สำเร็จ
                                 newProduct.PrintingType = 0; // หรือค่าที่เหมาะสมตามบริบท
                             }
 
@@ -353,11 +367,133 @@ namespace NDSPRO.Controllers
         [HttpPost]
         public ActionResult GetdataQuo()
         {
-            var dataquo = _context.YmtgOrders.Where(z=>z.QuotationNumber == "QUONDS24110033").ToList();
+            
+            var dataquo = _context.YmtgOrders.ToList();
+ 
             return Ok(dataquo);
         }
 
+
+        [HttpPost]
+        public ActionResult GetdataQuoForEdit([FromBody] QuotationViewModel request)
+        {
+
+            var dataquoEditOrder = _context.YmtgOrders.Where(z => z.QuotationNumber == request.QuotationNumber)
+                .FirstOrDefault();
+            //var dataquoEditProduct = _context.YmtgProducts.Where(z => z.QuotationNumber == request.QuotationNumber)
+            //    .GroupBy(p => p.QuotationNumber).ToList();
+
+            return Ok(dataquoEditOrder);
+        }
         
+
+        [HttpPost]
+        public ActionResult GetForEditProduct([FromBody] QuotationViewModel searchQuo)
+        {
+
+            //var dataquoEditOrder = _context.YmtgOrders.Where(z => z.QuotationNumber == request.QuotationNumber)
+            //    .FirstOrDefault();
+            var dataquoEditProduct = _context.YmtgProducts.Where(z => z.QuotationNumber == searchQuo.QuotationNumber).ToList();
+
+            return Ok(dataquoEditProduct);
+        }
+
+
+
+
+        //Update data
+        [HttpPost]
+        public ActionResult UpdateQuotation([FromBody] QuotationUpdateModel updateModel)
+        {
+            if (updateModel == null)
+            {
+                return BadRequest("Invalid data.");
+            }
+
+            // ตรวจสอบและดึงข้อมูล Order เดิมจากฐานข้อมูล
+            var existingOrder = _context.YmtgOrders.FirstOrDefault(q => q.QuotationNumber == updateModel.QuotationNumber);
+            if (existingOrder == null)
+            {
+                return NotFound("Quotation not found.");
+            }
+
+            // อัปเดตข้อมูลใน Order
+            existingOrder.CustomerName = updateModel.CustomerName;
+            existingOrder.OrderDate = updateModel.OrderDate;
+            existingOrder.ShipDate = updateModel.ShipDate;
+            existingOrder.TotalQty = updateModel.TotalQty;
+            existingOrder.TotalPrice = updateModel.TotalPrice;
+            existingOrder.QuoRemark = updateModel.Remark;
+            existingOrder.CustomerAddress = updateModel.CustomerAddress;
+            existingOrder.CustomerPhone = updateModel.CustomerPhone;
+            existingOrder.QuoProvince = updateModel.QuoProvince;
+            existingOrder.QuoDistricts = updateModel.QuoDistricts;
+            existingOrder.QuoSubDistricts = updateModel.QuoSubDistricts;
+            existingOrder.QuoZipCode = updateModel.QuoZipCode;
+            existingOrder.CreateBy = "ADMIN"; // ระบุผู้แก้ไขล่าสุด
+            existingOrder.CreateDate = DateTime.Now;
+            existingOrder.QuoCompanyName = updateModel.QuoCompanyName;
+            existingOrder.QuoLastname = updateModel.QuoLastname;
+            existingOrder.QuoTaxID = updateModel.QuoTaxID;
+            existingOrder.CustomerEmail = updateModel.CustomerEmail;
+
+           //TaxID / Email
+           // บันทึกการเปลี่ยนแปลง
+           _context.SaveChanges();
+
+
+            // ลบข้อมูลสินค้าเก่าทั้งหมดสำหรับ QuotationNumber
+            var existingProducts = _context.YmtgProducts
+                .Where(p => p.QuotationNumber == updateModel.QuotationNumber)
+                .ToList();
+            _context.YmtgProducts.RemoveRange(existingProducts);
+
+
+
+
+            //  YmtgProducts 
+            if (updateModel.Entries != null)
+            {
+                foreach (var entry in updateModel.Entries)
+                {
+                    var newProduct = new YmtgProductNds
+                    {
+                        QuotationNumber = updateModel.QuotationNumber,
+                        ProductName = entry.ProductName,
+                        Qty = entry.Qty,
+                        SKUCode = "",
+                        Size = entry.Size,
+                        Color = entry.Color,
+                        Price = entry.Price,
+                        PrintingType = 0,
+                        CreateBy = "ADMIN",
+                        CreateDate = DateTime.Now
+                    };
+                    //Price = entry.Qty * entry.Price,
+                    // ตรวจสอบและกำหนดค่า SKUCode
+                    if (!string.IsNullOrEmpty(entry.Sku) && entry.Sku.Length > 3)
+                    {
+                        newProduct.SKUCode = entry.Sku.Substring(0, entry.Sku.Length - 3);
+                    }
+
+                    // ตรวจสอบและกำหนดค่า PrintingType
+                    if (!string.IsNullOrEmpty(entry.Sku) && entry.Sku.Length > 3)
+                    {
+                        string lastThreeChars = entry.Sku.Substring(entry.Sku.Length - 3);
+                        if (int.TryParse(lastThreeChars, out int printingType))
+                        {
+                            newProduct.PrintingType = printingType;
+                        }
+                    }
+
+                    _context.YmtgProducts.Add(newProduct);
+                }
+
+                _context.SaveChanges();
+            }
+
+            return Ok("Quotation and products updated successfully.");
+        }
 
     }
 
