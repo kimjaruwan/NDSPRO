@@ -21,10 +21,13 @@ namespace NDSPRO.Data
         public DbSet<YmtgProductNds> YmtgProducts { get; set; }
 
         public DbSet<YmtgOrderNds> YmtgOrders { get; set; }
-
+     
         public DbSet<TypeOrderFrom> TypeOrder { get; set; }
 
+
+        public DbSet<ProductType> ProductTypes { get; set; }
       
+        public DbSet<MasterRemark> YmtgRemark { get; set; }
 
     }
 }

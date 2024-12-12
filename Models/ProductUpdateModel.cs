@@ -6,6 +6,7 @@
         public string ProductName { get; set; }
 
         public string Sku { get; set; }
+        public string SKUCodeFull { get; set; }
         public int Qty { get; set; }
         public string Size { get; set; }
         public string Color { get; set; }

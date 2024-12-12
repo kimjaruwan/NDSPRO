@@ -4,7 +4,7 @@
 }
 <body ng-app="app" ng-controller="MyController" ng-init="GetPageLoad()">
     <div class="container mt-3">
-        <h2 class="text-bold mb-4">ใบเสนอราคา (Quotation)</h2>
+        <h2 class="text-bold mb-4">ใบเสนอราคา (Create Quotation)</h2>
 
 
         <!-- Quotation Type -->
@@ -22,7 +22,7 @@
                     <label class="col-form-label text-bold">Quotation Type</label>
                     <select ng-model="SelectedTypeSell"
                             class="form-control"
-                            ng-options="type.typeRecapFrom + ' (' + type.codeChar + ')' for type in ListTypeSell">
+                            ng-options=" x for x in ListTypeSell">
                     </select>
                 </div>
                 <div class="mb-3 col-md-4">
@@ -292,13 +292,34 @@
                     </div>
 
 
-                    <!-- Notes Input -->
+                    @* <!-- Notes Input -->
                     <div class="mb-3 col-md-12">
                         <label class="col-form-label text-bold">หมายเหตุ</label>
                         <textarea class="form-control"
                                   ng-model="QuoData.Remark"
                                   placeholder="Remark"></textarea>
+                    </div> *@
+
+                    <div class="mb-3 col-md-12">
+                        <label class="col-form-label text-bold">หมายเหตุ</label>
+                        <!-- Dropdown สำหรับเลือก Remark -->
+                        <select class="form-control mb-2"
+                                ng-options="remark for remark in Remarks"
+                                ng-model="selectedRemark"
+                                ng-change="QuoData.Remark = selectedRemark"
+                                placeholder="เลือกหรือพิมพ์หมายเหตุ">
+                            <option value="">-- เลือกหมายเหตุ --</option>
+                        </select>
+
+                        <!-- Textarea สำหรับพิมพ์หมายเหตุ -->
+                        <textarea class="form-control"
+                                  ng-model="QuoData.Remark"
+                                  placeholder="Remark"></textarea>
                     </div>
+
+
+
+
                 </div>
             </div>
         </div>

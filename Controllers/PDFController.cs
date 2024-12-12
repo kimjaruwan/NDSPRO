@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using iText.Layout.Borders;
 
 namespace NDSPRO.Controllers
-{   
+{
 
     public class PDFController : Controller
     {
@@ -33,20 +33,33 @@ namespace NDSPRO.Controllers
         [HttpGet]
         public ActionResult PrintPDF(string quotationNumber)
         {
-           
+
             var FontLinkBold = @"wwwroot/fonts/THSarabunPSK/THSarabun Bold.ttf";
             var FontLinkNormal = @"wwwroot/fonts/THSarabunPSK/THSarabun.ttf";
+
+
+            string remarkText = "";
+            string accountInfo = "ธนาคารไทยพาณิชย์ จำกัด (มหาชน) ชื่อบัญชี NOBLE DESTRIBUTION S เลขที่บัญชี 278-227978-1";
+            string preparedBy = "";
+
             //var LogoLink = @"wwwroot/images/logo-nds.png";
             string logoLink = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "logo-nds.png");
- 
+
             var GetProductTable = new List<YmtgProductNds>();
             var GetOrderTable = new YmtgOrderNds();
+            var GetMasterStyle = new MasterStyle();
 
             if (quotationNumber != null && quotationNumber != "")
             {
                 GetOrderTable = _context.YmtgOrders.Where(z => z.QuotationNumber == quotationNumber).FirstOrDefault();
 
                 GetProductTable = _context.YmtgProducts.Where(z => z.QuotationNumber == quotationNumber).ToList();
+
+
+                remarkText = GetOrderTable.QuoRemark;               
+                preparedBy = GetOrderTable?.CreateBy ?? "Unknown";
+                //GetMasterStyle = _context.MasterStyles
+
             }
 
 
@@ -55,8 +68,11 @@ namespace NDSPRO.Controllers
                 using (MemoryStream stream = new MemoryStream())
                 {
                     // Create a new PDF document
-                    Document document = new Document(PageSize.A4, 25, 25, 30, 30);
-                    PdfWriter.GetInstance(document, stream);
+                    Document document = new Document(PageSize.A4, 25, 25, 5, 55); //เดิม 25, 25, 30, 30
+                    PdfWriter writer = PdfWriter.GetInstance(document, stream);
+
+                    //เพิ่มสำหรับ footer 
+                    writer.PageEvent = new FooterEvent(remarkText, accountInfo, preparedBy, FontLinkBold, FontLinkNormal);
                     document.Open();
 
 
@@ -71,20 +87,21 @@ namespace NDSPRO.Controllers
                     //iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance(imagePath);
                     // เพิ่มรูปใน PDF
                     iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance(logoLink);
-                    logo.ScaleToFit(80f, 110f);
-                    logo.Alignment = Element.ALIGN_LEFT;
+                    logo.ScaleToFit(70f, 100f);
+                    logo.Alignment = Element.ALIGN_RIGHT;
 
                     PdfPCell imageCell = new PdfPCell(logo);
                     imageCell.Border = Rectangle.NO_BORDER;
                     imageCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+                    imageCell.PaddingTop = 25f; // รูปกับด้านบน
                     headerTable.AddCell(imageCell);
 
                     // Adding Company Information Text without Table
                     // Company Name with larger font
                     Paragraph companyName = new Paragraph(
                         "บริษัท โนเบิล ดิสทริบิวชั่นเซอรวิ์สเซส(ไทย) จํากัด\n",
-                        new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 25, Font.NORMAL));
-                  
+                        new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 22, Font.NORMAL));
+
                     companyName.Alignment = Element.ALIGN_LEFT;
 
                     document.Add(new Paragraph("\n")); // เว้นบรรทัด 
@@ -104,7 +121,9 @@ namespace NDSPRO.Controllers
                     companyInfoCell.AddElement(companyDetails);
                     companyInfoCell.Border = Rectangle.NO_BORDER;
                     companyInfoCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+                   
                     headerTable.AddCell(companyInfoCell);
+                    headerTable.SpacingBefore = 0f;
 
                     document.Add(headerTable);
 
@@ -113,7 +132,7 @@ namespace NDSPRO.Controllers
                     // Text : ใบเสนอราคา (Quotation)
                     // สร้างฟอนต์สำหรับข้อความ
                     BaseFont baseFont = BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-                    Font fonthead = new Font(baseFont, 25, Font.NORMAL);
+                    Font fonthead = new Font(baseFont, 20, Font.NORMAL);
                     BaseFont baseFontDe = BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
                     Font fontDe = new Font(baseFontDe, 16, Font.NORMAL);
 
@@ -141,10 +160,10 @@ namespace NDSPRO.Controllers
                     //};
 
                     Phrase phrase = new Phrase();
-                    phrase.Add(new Chunk("ใบเสนอราคา (Quotation)",fonthead));
+                    phrase.Add(new Chunk("ใบเสนอราคา (Quotation)", fonthead));
                     phrase.Add(Chunk.Newline);
                     phrase.Add(Chunk.Newline);
-                   
+
 
                     // สร้าง PdfPCell และเพิ่ม Phrase ลงในเซลล์
                     PdfPCell cell2 = new PdfPCell(phrase)
@@ -163,86 +182,97 @@ namespace NDSPRO.Controllers
                     cell3.Border = PdfPCell.NO_BORDER;
 
                     tableHeadTextQuotation.AddCell(cell3);
-
+                    tableHeadTextQuotation.SpacingBefore = 0f; //กำหนดระยะห่างจากด้านบน
                     // เพิ่มตารางลงในเอกสาร
                     document.Add(tableHeadTextQuotation);
 
-
-                    //สร้างตารางที่มี 3 Column - ชื่อลูกค้า ที่อยู่ เลขที่ใบเสนอราคา
+                    // สร้างตาราง 2 คอลัมน์
                     PdfPTable tableHeadDetail = new PdfPTable(2);
-                    tableHeadDetail.WidthPercentage = 100; // กำหนดความกว้างของตารางเป็น 100%
-                    float[] DetailWidths = { 1f, 1f};
+                    tableHeadDetail.WidthPercentage = 100; // ความกว้างตาราง 100%
+                    float[] DetailWidths = { 1.5f, 1f }; // ค่าความกว้างของคอลัมน์
                     tableHeadDetail.SetWidths(DetailWidths);
+                   
+                    // กำหนดค่าตัวแปร
+                    var Customer = GetOrderTable.CustomerName + " " + GetOrderTable.QuoLastname;
+                    var CompanyCust = GetOrderTable.QuoCompanyName;
+
+                    if (string.IsNullOrEmpty(GetOrderTable.CustomerName) && string.IsNullOrEmpty(GetOrderTable.QuoLastname))
+                    {
+                        Customer = "-";
+                    }
+
+                    if (string.IsNullOrEmpty(CompanyCust))
+                    {
+                        CompanyCust = "-";
+                    }
+
+                    //----ชื่อลูกค้าและชื่อบริษัท (รวมใน Cell ด้านซ้าย)
+                    Paragraph LableCustCompany = new Paragraph();
+                    LableCustCompany.Add(new Chunk("ชื่อลูกค้า :   ", new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    LableCustCompany.Add(new Chunk(Customer, new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    LableCustCompany.Add(Chunk.Newline);
+                    LableCustCompany.Add(new Chunk("ชื่อบริษัท :  ", new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    LableCustCompany.Add(new Chunk(CompanyCust, new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    LableCustCompany.Leading = 15f;
+                    LableCustCompany.Alignment = Element.ALIGN_LEFT;
 
 
-                    //---เลขที่ใบเสนอราคา
-                    Paragraph LabelNum = new Paragraph("เลขที่ใบเสนอราคา : " + GetOrderTable.QuotationNumber,
-            new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 16, Font.NORMAL));
-                    LabelNum.Alignment = Element.ALIGN_LEFT;
+                    PdfPCell cellLeft1 = new PdfPCell();
+                    cellLeft1.Border = PdfPCell.NO_BORDER;
+                    cellLeft1.AddElement(LableCustCompany);
 
-                    PdfPCell cellD1 = new PdfPCell();
-                    cellD1.Border = PdfPCell.NO_BORDER;
-                    cellD1.AddElement(LabelNum);
-                    tableHeadDetail.AddCell(cellD1);
-                    //---เลขที่ใบเสนอราคา
-
-                    var Customer = ""; 
-                    Customer = GetOrderTable.CustomerName;
-
-                    if (Customer == null || Customer.Length == 0) {
-                        Customer = GetOrderTable.QuoCompanyName;
-
-                    } else Customer = GetOrderTable.CustomerName + " " +GetOrderTable.QuoLastname;
-
-                    //----ชื่อลูกค้า
-                    Paragraph LableCust = new Paragraph("ชื่อลูกค้า : " + Customer,
-           new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 16, Font.NORMAL));
-                    LableCust.Alignment = Element.ALIGN_LEFT;
-
-                    PdfPCell cellD2 = new PdfPCell();
-                    cellD2.Border = PdfPCell.NO_BORDER;
-                    cellD2.AddElement(LableCust);
-                    tableHeadDetail.AddCell(cellD2);
-                 
-                    //----ชื่อลูกค้า
-
-                    //document.Add(tableHeadDetail);
-                    //document.Add(new Paragraph("\n"));
-
-                    // เพิ่ม Cell  3 เป็นค่าว่าง-----
-
-                    PdfPCell cellD3 = new PdfPCell(new Phrase(""));
-                    cellD3.Border = PdfPCell.NO_BORDER;
-
-                    tableHeadDetail.AddCell(cellD3);
-                    // เพิ่ม Cell  3 เป็นค่าว่าง-----
+                    //----เลขที่ใบเสนอราคา (ด้านขวา)
+                    Paragraph LabelQuotationNumber = new Paragraph();
+                    LabelQuotationNumber.Add(new Chunk("เลขที่ใบเสนอราคา : ", new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    LabelQuotationNumber.Add(new Chunk(GetOrderTable.QuotationNumber, new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    LabelQuotationNumber.Alignment = Element.ALIGN_RIGHT;
 
 
+                    PdfPCell cellRight1 = new PdfPCell();
+                    cellRight1.Border = PdfPCell.NO_BORDER;
+                    cellRight1.AddElement(LabelQuotationNumber);
 
-                    //----ที่อยู่ลูกค้า
+                    // เพิ่มแถวแรกในตาราง
+                    tableHeadDetail.AddCell(cellLeft1);
+                    tableHeadDetail.AddCell(cellRight1);
 
-                    Paragraph LableAddress = new Paragraph("ที่อยู่ : " + GetOrderTable.CustomerAddress + "\n" +
-                         "ตำบล " + GetOrderTable.QuoSubDistricts + "  อำเภอ " + GetOrderTable.QuoDistricts + "\n" +
-                        "จังหวัด " + GetOrderTable.QuoProvince + " " + GetOrderTable.QuoZipCode + "\n", fontDe
-           );
-                    // กำหนดค่า leading
-                    LableAddress.Leading = 15f; // ระยะห่างระหว่างบรรทัด
+                    //----ที่อยู่ลูกค้า (เต็มความกว้างของตาราง)
+                    //Paragraph LableAddress = new Paragraph();
+                    //LableAddress.Add(new Chunk("ที่อยู่ : ", new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    //LableAddress.Add(new Chunk(GetOrderTable.CustomerAddress + "\n", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    //LableAddress.Add(new Chunk("ตำบล " + GetOrderTable.QuoSubDistricts + "  อำเภอ " + GetOrderTable.QuoDistricts + "\n", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    //LableAddress.Add(new Chunk("จังหวัด " + GetOrderTable.QuoProvince + " " + GetOrderTable.QuoZipCode + "\n", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    //LableAddress.Leading = 15f;
+                    //LableAddress.Alignment = Element.ALIGN_LEFT;
+
+                    Paragraph LableAddress = new Paragraph();
+                    LableAddress.Add(new Chunk("ที่อยู่ :       ", new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    LableAddress.Add(new Chunk(GetOrderTable.CustomerAddress + " ตำบล " + GetOrderTable.QuoSubDistricts + "\n", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    LableAddress.Add(new Chunk("               อำเภอ " + GetOrderTable.QuoDistricts + " จังหวัด " + GetOrderTable.QuoProvince + " " + GetOrderTable.QuoZipCode + "\n", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    LableAddress.Leading = 15f;
                     LableAddress.Alignment = Element.ALIGN_LEFT;
 
-                    PdfPCell cellD4 = new PdfPCell();
-                    cellD4.Border = PdfPCell.NO_BORDER;
-                    cellD4.AddElement(LableAddress);
-                    tableHeadDetail.AddCell(cellD4);
 
-                    //----ที่อยู่ลูกค้า
+                    PdfPCell cellFullWidth = new PdfPCell();
+                    cellFullWidth.Colspan = 2; // กำหนดให้ Cell นี้ครอบคลุมทั้ง 2 คอลัมน์
+                    cellFullWidth.Border = PdfPCell.NO_BORDER;
+                    cellFullWidth.AddElement(LableAddress);
 
+                    // เพิ่มแถวที่สอง (ที่อยู่)
+                    tableHeadDetail.AddCell(cellFullWidth);
+
+                    // เพิ่มตารางใน Document
                     document.Add(tableHeadDetail);
+
+
                     //document.Add(new Paragraph("\n"));
 
-                    Paragraph TaxID = new Paragraph("เลขที่ประจำตัวผู้เสียภาษีอากร : " + GetOrderTable.QuoTaxID, fontDe
-                        );
-                    
+                    Paragraph TaxID = new Paragraph();
+                    TaxID.Add(new Chunk("เลขที่ประจําตัวผู้เสียภาษีอากร : ", new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    TaxID.Add(new Chunk(GetOrderTable.QuoTaxID, new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 15)));
+                    TaxID.Alignment = Element.ALIGN_LEFT;
                     document.Add(TaxID);
+
                     document.Add(new Paragraph("\n"));
 
                     //document.Add(tableHeadDetail);
@@ -250,7 +280,7 @@ namespace NDSPRO.Controllers
                     // Table of items (Full Width Alignment) -- ตารางที่มีรายการสินค้า
                     PdfPTable table = new PdfPTable(5);
                     table.WidthPercentage = 100;
-                    table.SetWidths(new float[] { 1, 4, 2, 2, 2 });
+                    table.SetWidths(new float[] { 1f, 5f, 1.5f, 1.5f, 1.5f });
 
                     // Table headers
                     PdfPCell[] headers = new PdfPCell[]
@@ -273,22 +303,59 @@ namespace NDSPRO.Controllers
                     int index = 1; // Start the index for "ลำดับ"
                     foreach (var product in GetProductTable)
                     {
+                        // ดึงข้อมูลจาก MasterStyle
+                        var masterStyle = _context.MasterStyles
+                            .Where(ms => ms.StyleCode == product.ProductName)
+                            .FirstOrDefault();
+
+                        string productDescription = product.ProductName;
+
+                        // รวมข้อมูล FabricDesc และ PatternDetail
+                        if (masterStyle != null)
+                        {
+                            if (product.Size == "NO SIZE" && product.Color != "NO COLOR")
+                            {
+                                productDescription = productDescription + ", Fabric " + masterStyle.FabricDesc + ", Pattern " + masterStyle.PatternDetail +
+                                ", Color " + product.Color;
+                            }
+                            else if (product.Size != "NO SIZE" && product.Color == "NO COLOR")
+                            {
+                                productDescription = productDescription + ", Fabric " + masterStyle.FabricDesc + ", Pattern " + masterStyle.PatternDetail +
+                                    ", Size " + product.Size;
+                            }
+                            else if (product.Size == "NO SIZE" && product.Color == "NO COLOR")
+                            {
+                                productDescription = productDescription + ", Fabric " + masterStyle.FabricDesc + ", Pattern " + masterStyle.PatternDetail;
+                            }
+                            else
+                            {
+                             
+                                productDescription = productDescription + ", Fabric " + masterStyle.FabricDesc + ", Pattern " + masterStyle.PatternDetail +
+                                    ", Size " + product.Size + ", Color " + product.Color;
+                            }
+
+                        }
+
+
                         // ลำดับ
                         table.AddCell(new PdfPCell(new Phrase(index.ToString(), new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
                         {
                             HorizontalAlignment = Element.ALIGN_CENTER
+                            //PaddingBottom = 10f 
                         });
 
                         // รายการสินค้า
-                        table.AddCell(new PdfPCell(new Phrase(product.ProductName, new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
+                        table.AddCell(new PdfPCell(new Phrase(productDescription, new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
                         {
-                            HorizontalAlignment = Element.ALIGN_LEFT
+                            HorizontalAlignment = Element.ALIGN_LEFT,
+                             PaddingBottom = 10f
                         });
 
                         // จำนวน
                         table.AddCell(new PdfPCell(new Phrase($"{product.Qty}", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
                         {
                             HorizontalAlignment = Element.ALIGN_CENTER
+                             //PaddingBottom = 10f
                         });
 
                         // ราคา/หน่วย
@@ -296,25 +363,27 @@ namespace NDSPRO.Controllers
                         table.AddCell(new PdfPCell(new Phrase($"{pricePerUnit.ToString("N2")}", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
                         {
                             HorizontalAlignment = Element.ALIGN_RIGHT
+                             //PaddingBottom = 10f
                         });
 
                         // จำนวนเงิน
                         table.AddCell(new PdfPCell(new Phrase($"{product.Price.ToString("N2")}", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
                         {
                             HorizontalAlignment = Element.ALIGN_RIGHT
+                            //PaddingBottom = 10f
                         });
 
                         index++; // Increment the index
                     }
 
-                    String Test = "";
+                 
 
                     document.Add(table);
 
                     document.Add(new Paragraph("\n"));
 
                     //คำนวนราคารวม-----------------------------------
-                    
+
                     decimal totalAmountValue = 0;
 
                     // คำนวณยอดรวมจากข้อมูลใน GetProductTable
@@ -323,90 +392,69 @@ namespace NDSPRO.Controllers
                         totalAmountValue += product.Price;
                     }
 
-                    var rateTest = "TESTTTTTTT";
+                    
                     // คำนวณ VAT 7%
                     decimal vat = totalAmountValue * 0.07m;
+                    // ราคาก่อน VAT 
+                    decimal BeforeVat = totalAmountValue - vat;
 
                     // คำนวณรวมราคาทั้งสิ้น
-                    decimal grandTotal = totalAmountValue + vat;
+                    //decimal grandTotal = totalAmountValue + vat;
 
 
 
                     // Total amount (Right Alignment)
-                    Paragraph totalAmount = new Paragraph("รวมเงิน : "+ totalAmountValue.ToString("N2") + "\n" +
-                                                          "Vat 7% : "+ vat.ToString("N2") + "\n" +
-                                                          "รวมราคาทั้งสิ้น : " + grandTotal.ToString("N2") + "",
-                                                          new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 16));
-                    totalAmount.Alignment = Element.ALIGN_RIGHT;
-                    document.Add(totalAmount);
+                    //Paragraph totalAmount = new Paragraph("Vat 7% : " + vat.ToString("N2") + "\n" +
+                    //                                     "ราคาก่อน Vat : " + BeforeVat.ToString("N2") + "\n" +
+                    //                                     "รวมราคาทั้งสิ้น : " + totalAmountValue.ToString("N2") + "",
+                    //                                      new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 16));
+                    //totalAmount.Alignment = Element.ALIGN_RIGHT;
+                    //document.Add(totalAmount);
+                    // สร้างตาราง 2 คอลัมน์เพื่อแสดงข้อความและตัวเลข
+                    PdfPTable totalAmountTable = new PdfPTable(2);
+                    totalAmountTable.WidthPercentage = 25; // กำหนดความกว้างของตาราง (50% ของหน้ากระดาษ)
+                    totalAmountTable.HorizontalAlignment = Element.ALIGN_RIGHT; // จัดตารางชิดขวา
+                    totalAmountTable.SetWidths(new float[] { 2f, 1f }); // กำหนดสัดส่วนคอลัมน์ (ข้อความ:ตัวเลข)
+
+                    // ฟอนต์สำหรับข้อความ
+                    Font boldFont = new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 16);
+                    Font normalFont = new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 16);
+
+                    // เพิ่มข้อความและตัวเลขในแต่ละแถว
+                    // Row 1: Vat 7%
+                    totalAmountTable.AddCell(CreateAlignedCell("Vat 7% : ", boldFont, Element.ALIGN_LEFT));
+                    totalAmountTable.AddCell(CreateAlignedCell(vat.ToString("N2"), normalFont, Element.ALIGN_RIGHT));
+
+                    // Row 2: ราคาก่อน Vat
+                    totalAmountTable.AddCell(CreateAlignedCell("ราคาก่อน Vat : ", boldFont, Element.ALIGN_LEFT));
+                    totalAmountTable.AddCell(CreateAlignedCell(BeforeVat.ToString("N2"), normalFont, Element.ALIGN_RIGHT));
+
+                    // Row 3: รวมราคาทั้งสิ้น
+                    totalAmountTable.AddCell(CreateAlignedCell("รวมราคาทั้งสิ้น : ", boldFont, Element.ALIGN_LEFT));
+                    totalAmountTable.AddCell(CreateAlignedCell(totalAmountValue.ToString("N2"), normalFont, Element.ALIGN_RIGHT));
+
+                    // เพิ่มตารางลงในเอกสาร
+                    document.Add(totalAmountTable);
+
+                    // ฟังก์ชันช่วยสร้างเซลล์ที่จัดตำแหน่ง
+                    PdfPCell CreateAlignedCell(string text, Font font, int alignment)
+                    {
+                        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+                        cell.Border = Rectangle.NO_BORDER; // ไม่มีเส้นขอบ
+                        cell.HorizontalAlignment = alignment; // จัดตำแหน่งข้อความในเซลล์
+                        return cell;
+                    }
+
+
+
 
                     document.Add(new Paragraph("\n"));
 
-                    // หมายเหตุ-------- 
-                    Paragraph Remark = new Paragraph("หมายเหตุ \n" +
-                                                       "หลังจากยืนยัน PO ลูกค้าชำระเงิน 50% ของราคาสินค้า และชำระอีก 50% ก่อนส่งสินค้า\n" +
-                                                       "ธนาคารไทยพาณิชย์ จำกัด (มหาชน) ชื่อบัญชี NOBLE DESTRIBUTION S เลขที่บัญชี 278-227978-1",
-                                                       new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 16));
-                    totalAmount.Alignment = Element.ALIGN_LEFT;
-                    document.Add(Remark);
 
-                    document.Add(new Paragraph("\n"));
-                    document.Add(new Paragraph("\n"));
-                    //สร้างตารางที่มี 3 Column *Footer*
-                    PdfPTable tableFooter = new PdfPTable(3);
-                    tableFooter.WidthPercentage = 100; // กำหนดความกว้างของตารางเป็น 100%
-                    float[] tableFooterW = { 1f, 1f, 1f };
-                    tableFooter.SetWidths(tableFooterW);
-
-
-                    //เพิ่มข้อมูล cellFooter1
-                    PdfPCell cellFooter1 = new PdfPCell(new Phrase("สั่งซื้อโดย/Order By \n" +
-                        "_______________ \n" +
-                        "(_______________) \n" +
-                        "วันที่___/___/___",fontDe));
-                    cellFooter1.Border = PdfPCell.NO_BORDER;
-
-                    cellFooter1.HorizontalAlignment = Element.ALIGN_CENTER;
-                    //cellFooter3.VerticalAlignment = Element.ALIGN_MIDDLE;
-                    tableFooter.AddCell(cellFooter1);
-
-                    //เพิ่มข้อมูล cellFooter2
-                    PdfPCell cellFooter2 = new PdfPCell(new Phrase("ออกโดย/Prepared By \n" +
-                        "" + GetOrderTable.CreateBy +" \n" +
-                        "( "+ GetOrderTable.CreateBy +" ) \n" +
-                        "วันที่ " + DateTime.Now.Date.ToString("dd/MM/yyyy"), fontDe));
-                    cellFooter2.Border = PdfPCell.NO_BORDER;
-
-                    cellFooter2.HorizontalAlignment = Element.ALIGN_CENTER;
-                    //cellFooter3.VerticalAlignment = Element.ALIGN_MIDDLE;
-                    tableFooter.AddCell(cellFooter2);
-
-
-
-                    //เพิ่มข้อมูล cellFooter3
-                    PdfPCell cellFooter3 = new PdfPCell(new Phrase("ผู้มีอำนาจอนุมัติ/Authorized \n" +
-                      "_______________ \n" +
-                        "(_______________) \n" +
-                        "วันที่___/___/___", fontDe));
-                    cellFooter3.Border = PdfPCell.NO_BORDER;
-
-                    // จัดข้อความให้อยู่กึ่งกลางทั้งแนวตั้งและแนวนอน
-                    cellFooter3.HorizontalAlignment = Element.ALIGN_CENTER;
-                    //cellFooter3.VerticalAlignment = Element.ALIGN_MIDDLE;
-
-                    tableFooter.AddCell(cellFooter3);
-
-                    // Footer (Left Alignment)
-                    //Paragraph footer = new Paragraph("ออกโดย:" +
-                    //                                 "วันที่: 11/09/2024",
-                    //                                 new Font(BaseFont.CreateFont(@"c:/windows/fonts/TAHOMA.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 12));
-                    //footer.Alignment = Element.ALIGN_LEFT;
-                    document.Add(tableFooter);
-               
                     document.Close();
 
                     byte[] bytes = stream.ToArray();
-                    return File(bytes, "application/pdf", GetOrderTable.QuotationNumber+".pdf");
+                    return File(bytes, "application/pdf", GetOrderTable.QuotationNumber + ".pdf");
                 }
             }
             catch (Exception ex)

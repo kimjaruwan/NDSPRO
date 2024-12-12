@@ -119,6 +119,7 @@ namespace NDSPRO.Controllers
             colors.Add("Gray");
             colors.Add("Navy");
             colors.Add("White");
+            colors.Add("NO COLOR");
             return Ok(colors);
         }
         [HttpGet]
@@ -133,6 +134,7 @@ namespace NDSPRO.Controllers
             sizes.Add("2XL");
             sizes.Add("3XL");
             sizes.Add("4XL");
+            sizes.Add("NO SIZE");
             return Ok(sizes);
         }
 
@@ -186,14 +188,16 @@ namespace NDSPRO.Controllers
         [HttpGet]
         public ActionResult GetOrderType()
         {
-            var GetOrderTypeLists = _context.TypeOrder
-          .Select(p => new
-          {
-              TypeRecapFrom = p.TypeRecapFrom,
-              CodeChar = p.CodeChar
-          })
-          .Distinct()
-          .ToList();
+            //  var GetOrderTypeLists = _context.TypeOrder
+            //.Select(p => new
+            //{
+            //    TypeRecapFrom = p.TypeRecapFrom,
+            //    CodeChar = p.CodeChar
+            //})
+            //.Distinct()
+            //.ToList();
+            //  return Ok(GetOrderTypeLists);
+            var GetOrderTypeLists = _context.TypeOrder.Select(p => p.TypeRecapShow).ToList();
             return Ok(GetOrderTypeLists);
 
         }
@@ -300,6 +304,7 @@ namespace NDSPRO.Controllers
                         ProductName = entry.SelectedStyleName,
                         Qty = entry.Quantity,
                         SKUCode = "",
+                        SKUCodeFull = entry.SelectedSku,
                         Size = entry.SelectedSize,
                         Color = entry.SelectedColor,
                         Price = entry.Quantity * entry.PricePerUnit,
@@ -368,7 +373,7 @@ namespace NDSPRO.Controllers
         public ActionResult GetdataQuo()
         {
             
-            var dataquo = _context.YmtgOrders.ToList();
+            var dataquo = _context.YmtgOrders.Where(a => a.QuoCancel == 0).ToList();
  
             return Ok(dataquo);
         }
@@ -431,15 +436,16 @@ namespace NDSPRO.Controllers
             existingOrder.QuoSubDistricts = updateModel.QuoSubDistricts;
             existingOrder.QuoZipCode = updateModel.QuoZipCode;
             existingOrder.CreateBy = "ADMIN"; // ระบุผู้แก้ไขล่าสุด
-            existingOrder.CreateDate = DateTime.Now;
             existingOrder.QuoCompanyName = updateModel.QuoCompanyName;
             existingOrder.QuoLastname = updateModel.QuoLastname;
             existingOrder.QuoTaxID = updateModel.QuoTaxID;
             existingOrder.CustomerEmail = updateModel.CustomerEmail;
+            existingOrder.QuoType = updateModel.QuoType;
+            existingOrder.QuoLastUpdate = DateTime.Now;
 
-           //TaxID / Email
-           // บันทึกการเปลี่ยนแปลง
-           _context.SaveChanges();
+            //TaxID / Email
+            // บันทึกการเปลี่ยนแปลง
+            _context.SaveChanges();
 
 
             // ลบข้อมูลสินค้าเก่าทั้งหมดสำหรับ QuotationNumber
@@ -462,6 +468,7 @@ namespace NDSPRO.Controllers
                         ProductName = entry.ProductName,
                         Qty = entry.Qty,
                         SKUCode = "",
+                        SKUCodeFull = entry.SKUCodeFull,
                         Size = entry.Size,
                         Color = entry.Color,
                         Price = entry.Price,
@@ -469,12 +476,13 @@ namespace NDSPRO.Controllers
                         CreateBy = "ADMIN",
                         CreateDate = DateTime.Now
                     };
-                    //Price = entry.Qty * entry.Price,
-                    // ตรวจสอบและกำหนดค่า SKUCode
-                    if (!string.IsNullOrEmpty(entry.Sku) && entry.Sku.Length > 3)
+
+                    // ตัดสามตัวหลังออกจาก SKUCode
+                    if (!string.IsNullOrEmpty(entry.SKUCodeFull) && entry.SKUCodeFull.Length > 3)
                     {
-                        newProduct.SKUCode = entry.Sku.Substring(0, entry.Sku.Length - 3);
+                        newProduct.SKUCode = entry.SKUCodeFull.Substring(0, entry.SKUCodeFull.Length - 3);
                     }
+
 
                     // ตรวจสอบและกำหนดค่า PrintingType
                     if (!string.IsNullOrEmpty(entry.Sku) && entry.Sku.Length > 3)
@@ -494,6 +502,61 @@ namespace NDSPRO.Controllers
 
             return Ok("Quotation and products updated successfully.");
         }
+
+        [HttpGet]
+        public ActionResult GetLoadRemark()
+        {
+            var GetLoadRemark = _context.YmtgRemark.Select(k=> k.RemarkQuo).ToList();
+         
+            return Ok(GetLoadRemark);
+        }
+
+        [HttpGet]
+        public IActionResult GetQuotations()
+        {
+            var quotations = _context.YmtgOrders.Select(q => new
+            {
+                q.QuotationNumber,
+                q.QuoStatus,
+                q.QuoType,
+                q.CustomerName,
+                q.QuoLastname,
+                q.CreateDate,
+                q.QuoCancel,
+            }).Where(a => a.QuoCancel == 0).ToList();
+
+            return Json(quotations);
+        }
+
+        //Update data
+        [HttpPost]
+        public ActionResult DeleteQuo([FromBody] QuotationUpdateModel quoNumber)
+        {
+            if (quoNumber == null)
+            {
+                return BadRequest("Invalid data.");
+            }
+
+            
+            var existingOrder = _context.YmtgOrders.FirstOrDefault(q => q.QuotationNumber == quoNumber.QuotationNumber);
+            if (existingOrder == null)
+            {
+                return NotFound("Quotation not found.");
+            }
+
+          
+            existingOrder.QuoCancel = 1;
+  
+            existingOrder.QuoLastUpdate = DateTime.Now;
+
+        
+            _context.SaveChanges();
+
+            return Ok(new { quoNumber.QuotationNumber });
+
+        }
+
+
 
     }
 

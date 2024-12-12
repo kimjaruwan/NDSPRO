@@ -18,7 +18,7 @@
 	</ItemGroup>
 
   <ItemGroup>
-    
+    <Folder Include="wwwroot\NdsImages\" />
   </ItemGroup>
 
 </Project>

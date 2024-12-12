@@ -11,7 +11,10 @@
         public string SelectedColor { get; set; }
         public decimal PricePerUnit { get; set; }
 
+        public string SKUCodeFull { get; set; }
         
+
+
 
     }
 }

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace NDSPRO.Models
 {
 
-    [Table("YMTG_Product_NDS")]
+    [Table("YMTG_NDS_Product")]
     public class YmtgProductNds
     {
         public int Id { get; set; } = 0;
@@ -19,6 +19,7 @@ namespace NDSPRO.Models
         public int Qty { get; set; } = 0;
 
         public string SKUCode { get; set; } = "";
+        public string SKUCodeFull { get; set; } = "";
 
         public string Size { get; set; } = "";
 

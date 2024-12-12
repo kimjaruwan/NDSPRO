@@ -3,9 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace NDSPRO.Models
 
 {
-    [Table("YMTG_Order_NDS")]
+    [Table("YMTG_NDS_Order")]
     public class YmtgOrderNds
     {
+      
         public int Id { get; set; } = 0;                        // กำหนดค่าเริ่มต้นเป็น 0
         public string QuotationNumber { get; set; } = "";       // หมายเลขใบเสนอราคา
         public string OrderNumber { get; set; } = "";           // หมายเลขคำสั่งซื้อ
@@ -32,6 +33,10 @@ namespace NDSPRO.Models
         public string QuoZipCode { get; set; } = "";            // รหัสใบเสนอราคา
         public string QuoRemark { get; set; } = "";             // หมายเหตุใบเสนอราคา
         public string QuoTaxID { get; set; } = "";              // เลขประจำตัวผู้เสียภาษี
+
+        public DateTime? QuoLastUpdate { get; set; } = DateTime.Now;
+
+        public int QuoCancel { get; set; } = 0;
     }
 
 }

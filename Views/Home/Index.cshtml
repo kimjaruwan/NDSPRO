@@ -51,26 +51,26 @@
                         </li>
                     </ul> *@ <!-- end nav-->
                     <div class="tab-content">
-                        <div class="tab-pane show active" id="buttons-table-preview">
-                            <table id="datatable-buttons" class="table table-striped">
+                       @*  <div class="tab-pane show active" id="buttons-table-preview"> *@
+                            <table id="quotationTable" class="table table-striped dt-responsive nowrap w-100">
                                 <thead>
                                     <tr>
                                         <th class="text-center">Quotation Number</th>
-                                        <th class="text-center">Quotation Status</th>
+                                        @* <th class="text-center">Quotation Status</th> *@
                                         <th class="text-center">Quotation Type</th>
                                         <th class="text-center">Customer Name</th>
                                         <th class="text-center">Customer Lastname</th>
                                         <th class="text-center">Create date</th>
                                         <th class="text-center">Edit</th>
-                                        <th class="text-center">Print PDF</th>
+                                        <th class="text-center">PDF</th>
+                                        <th class="text-center">Delete</th>
                                     </tr>
                                 </thead>
 
-
+                                @* <td class="text-center">{{x.quoStatus}}</td> *@
                                 <tbody>
                                     <tr ng-repeat="x in ListQuo">
                                         <td class="text-center">{{x.quotationNumber}}</td>
-                                        <td class="text-center">{{x.quoStatus}}</td>
                                         <td class="text-center">{{x.quoType}}</td>
                                         <td class="text-center">{{x.customerName}}</td>
                                         <td class="text-center">{{x.quoLastname}}</td>
@@ -79,14 +79,16 @@
                                             <button class="btn btn-primary" ng-click="editQuotation(x.quotationNumber)">Edit</button>
                                         </td>
                                         <td class="text-center">
-                                            <button class="btn btn-danger" ng-click="PrintPDF(x.quotationNumber)">PDF</button>
+                                            <button class="btn btn-success" ng-click="PrintPDF(x.quotationNumber)">PDF</button>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-danger" ng-click="DeleteQuo(x.quotationNumber)">Delete</button>
                                         </td>
                                     </tr>
-                                  
-                                
+
                                 </tbody>
                             </table>
-                        </div> <!-- end preview-->
+                    @*     </div> *@ <!-- end preview-->
 
                         <div class="tab-pane" id="buttons-table-code">
                             <p>Please include following css file at <code>head</code> element</p>
@@ -693,6 +695,43 @@
 
     </div> *@
     <!-- end row -->
+    @section Scripts {
+        <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script> 
+        <script>
+            $(document).ready(function () {
+                $('#quotationTable').DataTable({
+                    ajax: {
+                        url: '/Home/GetQuotations', // URL ที่ใช้ในการดึงข้อมูล JSON
+                        type: 'GET',
+                        dataSrc: 'data'
+                    },
+                    columns: [
+                        { data: 'quotationNumber'},
+                        { data: 'quoType' },
+                        { data: 'customerName'},
+                        { data: 'quoLastname'},
+                        { data: 'createDate' }
+                        
+                    ]
+                    ,
+                   dom: 'frtip', // ใช้เฉพาะ search box, pagination, และ table info
+                   responsive: true,
+                   paging: true,
+                   searching: true,
+                   ordering: true,
+                   info: true
+                });
+            });
+        
+        </script>
+
+    }
 
 
 </body>

@@ -23,7 +23,14 @@
         public string QuoTaxID { get; set; }
 
         public string CustomerEmail { get; set; }
-   
+
+        public string QuoType { get; set; }
+
+      
+
+        //QuoLastUpdate
+        public DateTime? QuoLastUpdate { get; set; } = DateTime.Now;
+
 
         public List<ProductUpdateModel> Entries { get; set; }
     }

@@ -224,7 +224,7 @@ app.controller('MyController', function ($scope, $http, $window) {
             CustomerEmail: QuoData.CustomerEmail,
             CustomerAddress: QuoData.CustomerAddress,
             CustomerPhone: QuoData.CustomerPhone,
-            Remark: skuCode,
+            Remark: '',
             CreateBy: QuoData.CreateBy,
             CreateDate: QuoData.CreateDate,
             /*  CustomerAddressTax: dataQuotation.CustomerAddressTax,*/
@@ -237,9 +237,9 @@ app.controller('MyController', function ($scope, $http, $window) {
             QuoRemark: QuoData.Remark,
             QuoLastname: QuoData.QuoLastname,
             QuoTaxID: QuoData.QuoTaxID,
-            QuoType: SelectedTypeSell.typeRecapFrom
+            QuoType: SelectedTypeSell
         }).then(function (response) {
-            console.log(response.data);
+            console.log("TYPE" + response.data);
             console.log(response.data.quotationNumber);
             var generatedQuotationNumber = response.data.quotationNumber;
 
@@ -312,6 +312,7 @@ app.controller('MyController', function ($scope, $http, $window) {
         $scope.GetSizes();     // โหลด Sizes
         $scope.GetProvince() // โหลด จังหวัด
         $scope.GetOrderType(); // โหลด Type order
+        $scope.GetLoadRemark() // โหลด Master remark
     };
 
 
@@ -393,7 +394,7 @@ app.controller('MyController', function ($scope, $http, $window) {
     // ฟังก์ชัน Edit เพื่อเปลี่ยนเส้นทางไปยังหน้าที่ต้องการแก้ไข
     $scope.editQuotation = function (quotationNumber) {
         // ไปยังหน้าแก้ไขข้อมูล โดยใช้ quotationNumber เป็นพารามิเตอร์
-
+        console.log("editQuotation");
         $window.location.href = '/Home/EditQuo?quotationNumber=' + quotationNumber;
     }
 
@@ -493,7 +494,7 @@ app.controller('MyController', function ($scope, $http, $window) {
                 if (Array.isArray(response.data)) {
                     $scope.Entries = response.data.map(entry => ({
                         SelectedStyleName: entry.productName,
-                        SelectedSku: entry.sku,
+                        SelectedSku: entry.skuCodeFull,
                         SelectedSize: entry.size,
                         SelectedColor: entry.color,
                         Quantity: entry.qty,
@@ -516,9 +517,10 @@ app.controller('MyController', function ($scope, $http, $window) {
     // Function Update
 
     $scope.UpdateQuotation = function () {
-        console.log("TESTTTTTTTTTTTTT")
+        console.log("Update");
+        //!$scope.QuoData.CustomerName 
         // Validate before sending
-        if (!$scope.QuoData.QuoNumber || !$scope.QuoData.CustomerName || !$scope.Entries.length) {
+        if (!$scope.QuoData.QuoNumber || !$scope.Entries.length) {
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
@@ -530,6 +532,7 @@ app.controller('MyController', function ($scope, $http, $window) {
         // Prepare data for update
         const updateData = {
             QuotationNumber: $scope.QuoData.QuoNumber,
+            QuoType: $scope.SelectedTypeSell,
             CustomerName: $scope.QuoData.CustomerName,
             QuoLastname: $scope.QuoData.QuoLastname,
             QuoCompanyName: $scope.QuoData.CompanyName,
@@ -548,6 +551,8 @@ app.controller('MyController', function ($scope, $http, $window) {
             QuoZipCode: $scope.SZipcode,
             Entries: $scope.Entries.map(entry => ({       
                 ProductName: entry.SelectedStyleName,
+                SKUCodeFull: entry.SelectedSku,
+                Sku: entry.SelectedSku, // แก้ไขให้ส่งค่าที่ถูกต้อง
                 Qty: entry.Quantity,
                 Size: entry.SelectedSize,
                 Color: entry.SelectedColor,
@@ -594,6 +599,44 @@ app.controller('MyController', function ($scope, $http, $window) {
             }
         });
     };
+
+
+    $scope.GetLoadRemark = function () {
+        $http.get('/Home/GetLoadRemark')
+            .then(function (response) {
+                $scope.Remarks = response.data; // เก็บข้อมูล Remark ใน Scope
+            }, function (error) {
+                console.error("Error loading remarks:", error);
+            });
+    };
+
+    $scope.DeleteQuo = function (quoNumber) {
+      
+
+        $http.post('/Home/DeleteQuo', {
+            QuotationNumber: quoNumber
+        })
+            .then(function (response) {
+                console.log("Data : ", response.data);
+                var QuoNumber = response.data.quotationNumber; 
+                console.log("TEST : " + QuoNumber);
+                Swal.fire({
+                    icon: "success",
+                    title: "Delete Complete",
+                    text: "Quotation : " + QuoNumber + " Deleted."
+                }).then(function () {
+                    $window.location.href = "/Home/Index";
+                });
+            })
+            .catch(function (error) {
+                console.error("Delete Error:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Failed to delete quotation."
+                });
+            });
+    }
 
 
 });
