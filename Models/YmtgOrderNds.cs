@@ -36,6 +36,8 @@ namespace NDSPRO.Models
 
         public DateTime? QuoLastUpdate { get; set; } = DateTime.Now;
 
+        public int QuoShippingPrice { get; set; } = 0;
+
         public int QuoCancel { get; set; } = 0;
     }
 

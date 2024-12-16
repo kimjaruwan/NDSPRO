@@ -150,10 +150,6 @@
         </div>
 
 
-
-
-
-
     </div>
 
 
@@ -267,13 +263,29 @@
                             </tbody>
                         </table>
                         <!-- Label แสดงยอดรวม -->  @*   ng-model="TotalSum" *@
+                       @*  เพิ่มค่าขนส่งเพื่อไปคำนวน *@
+                        <div class="row">
+                            <!-- shipping -->
+                           
+                            <div class="mb-3 col-md-3">
+                                <label class="col-form-label text-bold">Shipping price (THB) :</label>
+                                <input type="text"
+                                       class="form-control"
+                                       ng-model="QuoData.QuoShippingPrice"
+                                       ng-change="CalculateTotalSum()"
+                                       placeholder="Shipping price">
+                            </div>
+                        </div>
+
+
+
 
                         @* Map total price & total sum *@
                         <div class="row">
                             <!-- Customer Name -->
                             <div class="mb-3 col-md-3">
 
-                                <label class="col-form-label text-bold">Total Price :</label>
+                                <label class="col-form-label text-bold">Total Price (THB) :</label>
                                 <input type="text" ng-model="QuoData.TotalPrice"
                                        class="form-control"
                                        value="{{QuoData.TotalPrice | number:2}}"
@@ -316,9 +328,6 @@
                                   ng-model="QuoData.Remark"
                                   placeholder="Remark"></textarea>
                     </div>
-
-
-
 
                 </div>
             </div>

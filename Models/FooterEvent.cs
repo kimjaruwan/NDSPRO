@@ -41,7 +41,7 @@
             // เพิ่มข้อความ _remarkText และ _accountInfo ด้วยฟอนต์ปกติ
             remarkTextParagraph.Add(new Chunk(_remarkText, normalFont));
             remarkTextParagraph.Add(Chunk.Newline);
-            remarkTextParagraph.Add(new Chunk("               " + _accountInfo, normalFont));
+            remarkTextParagraph.Add(new Chunk("" + _accountInfo, normalFont));
 
             // คำนวณตำแหน่ง Y สำหรับ Paragraphs
             float x = document.LeftMargin; // จุดเริ่มต้นจากซ้าย

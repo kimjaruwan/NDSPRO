@@ -377,6 +377,24 @@ namespace NDSPRO.Controllers
  
             return Ok(dataquo);
         }
+        // For front end
+        [HttpGet]
+        public JsonResult GetdataQuos()
+        {
+            var dataquo = _context.YmtgOrders.Select(e => new
+            {
+                e.Id,
+                e.QuotationNumber,
+                e.QuoType,
+                e.CustomerName,
+                e.QuoLastname,
+                e.CreateDate
+
+            }).ToList();
+
+            return Json(new { data = dataquo });
+
+        }
 
 
         [HttpPost]
@@ -442,6 +460,7 @@ namespace NDSPRO.Controllers
             existingOrder.CustomerEmail = updateModel.CustomerEmail;
             existingOrder.QuoType = updateModel.QuoType;
             existingOrder.QuoLastUpdate = DateTime.Now;
+            existingOrder.QuoShippingPrice = updateModel.QuoShippingPrice;
 
             //TaxID / Email
             // บันทึกการเปลี่ยนแปลง
@@ -522,10 +541,10 @@ namespace NDSPRO.Controllers
                 q.CustomerName,
                 q.QuoLastname,
                 q.CreateDate,
-                q.QuoCancel,
+                q.QuoCancel
             }).Where(a => a.QuoCancel == 0).ToList();
-
-            return Json(quotations);
+            return Json(new { data = quotations });
+            //return Json(quotations);
         }
 
         //Update data

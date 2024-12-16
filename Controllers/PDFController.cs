@@ -59,7 +59,7 @@ namespace NDSPRO.Controllers
                 remarkText = GetOrderTable.QuoRemark;               
                 preparedBy = GetOrderTable?.CreateBy ?? "Unknown";
                 //GetMasterStyle = _context.MasterStyles
-
+              
             }
 
 
@@ -376,7 +376,43 @@ namespace NDSPRO.Controllers
                         index++; // Increment the index
                     }
 
-                 
+                    // Add shipping fee row if QuoShippingPrice > 0
+                    if (GetOrderTable.QuoShippingPrice > 0)
+                    {
+                        // ลำดับ (ใช้ลำดับที่มากที่สุด)
+                        table.AddCell(new PdfPCell(new Phrase(index.ToString(), new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
+                        {
+                            HorizontalAlignment = Element.ALIGN_CENTER
+                        });
+
+                        // รายการสินค้า (ค่าขนส่ง)
+                        table.AddCell(new PdfPCell(new Phrase("ค่าขนส่ง (Shipping Fee)", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
+                        {
+                            HorizontalAlignment = Element.ALIGN_LEFT,
+                            PaddingBottom = 10f
+                        });
+
+                        // จำนวน (เว้นว่าง)
+                        table.AddCell(new PdfPCell(new Phrase("-", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
+                        {
+                            HorizontalAlignment = Element.ALIGN_CENTER
+                        });
+
+                        // ราคา/หน่วย (เว้นว่าง)
+                        table.AddCell(new PdfPCell(new Phrase("-", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
+                        {
+                            HorizontalAlignment = Element.ALIGN_RIGHT
+                        });
+
+                        // จำนวนเงิน (แสดงค่าขนส่ง)
+                        table.AddCell(new PdfPCell(new Phrase($"{GetOrderTable.QuoShippingPrice.ToString("N2")}", new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14)))
+                        {
+                            HorizontalAlignment = Element.ALIGN_RIGHT
+                        });
+
+                       
+                    
+                    }
 
                     document.Add(table);
 
@@ -392,11 +428,14 @@ namespace NDSPRO.Controllers
                         totalAmountValue += product.Price;
                     }
 
-                    
+                    // รวมค่าขนส่งเข้าใน totalAmountValue
+                    totalAmountValue = totalAmountValue + GetOrderTable.QuoShippingPrice;
                     // คำนวณ VAT 7%
-                    decimal vat = totalAmountValue * 0.07m;
+                    //decimal vat = totalAmountValue * 0.07m;
                     // ราคาก่อน VAT 
-                    decimal BeforeVat = totalAmountValue - vat;
+                    decimal BeforeVat = (totalAmountValue * 100)/107;
+
+                    decimal vat = (totalAmountValue * 7)/107;
 
                     // คำนวณรวมราคาทั้งสิ้น
                     //decimal grandTotal = totalAmountValue + vat;
@@ -410,31 +449,80 @@ namespace NDSPRO.Controllers
                     //                                      new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 16));
                     //totalAmount.Alignment = Element.ALIGN_RIGHT;
                     //document.Add(totalAmount);
+
+                    // สร้างตารางหลักสำหรับรูปภาพและ totalAmountTable
+                    PdfPTable mainTable = new PdfPTable(1); // สร้างตาราง 2 คอลัมน์
+                    mainTable.WidthPercentage = 25;
+                    mainTable.HorizontalAlignment = Element.ALIGN_RIGHT;// กำหนดความกว้างตารางเป็น 100% ของหน้ากระดาษ
+                    mainTable.SetWidths(new float[] { 1f }); // สัดส่วนคอลัมน์: รูปภาพ 2 ส่วน, ตารางตัวเลข 1 ส่วน
+
+                 
+
+
+
                     // สร้างตาราง 2 คอลัมน์เพื่อแสดงข้อความและตัวเลข
                     PdfPTable totalAmountTable = new PdfPTable(2);
                     totalAmountTable.WidthPercentage = 25; // กำหนดความกว้างของตาราง (50% ของหน้ากระดาษ)
                     totalAmountTable.HorizontalAlignment = Element.ALIGN_RIGHT; // จัดตารางชิดขวา
                     totalAmountTable.SetWidths(new float[] { 2f, 1f }); // กำหนดสัดส่วนคอลัมน์ (ข้อความ:ตัวเลข)
 
+
+
                     // ฟอนต์สำหรับข้อความ
                     Font boldFont = new Font(BaseFont.CreateFont(FontLinkBold, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 16);
                     Font normalFont = new Font(BaseFont.CreateFont(FontLinkNormal, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 16);
 
                     // เพิ่มข้อความและตัวเลขในแต่ละแถว
-                    // Row 1: Vat 7%
-                    totalAmountTable.AddCell(CreateAlignedCell("Vat 7% : ", boldFont, Element.ALIGN_LEFT));
-                    totalAmountTable.AddCell(CreateAlignedCell(vat.ToString("N2"), normalFont, Element.ALIGN_RIGHT));
-
-                    // Row 2: ราคาก่อน Vat
-                    totalAmountTable.AddCell(CreateAlignedCell("ราคาก่อน Vat : ", boldFont, Element.ALIGN_LEFT));
-                    totalAmountTable.AddCell(CreateAlignedCell(BeforeVat.ToString("N2"), normalFont, Element.ALIGN_RIGHT));
 
                     // Row 3: รวมราคาทั้งสิ้น
                     totalAmountTable.AddCell(CreateAlignedCell("รวมราคาทั้งสิ้น : ", boldFont, Element.ALIGN_LEFT));
                     totalAmountTable.AddCell(CreateAlignedCell(totalAmountValue.ToString("N2"), normalFont, Element.ALIGN_RIGHT));
 
+
+                     // Row 2: ราคาก่อน Vat
+                    totalAmountTable.AddCell(CreateAlignedCell("ราคาก่อน Vat : ", boldFont, Element.ALIGN_LEFT));
+                    totalAmountTable.AddCell(CreateAlignedCell(BeforeVat.ToString("N2"), normalFont, Element.ALIGN_RIGHT));
+
+
+                    // Row 1: Vat 7%
+                    totalAmountTable.AddCell(CreateAlignedCell("Vat 7% : ", boldFont, Element.ALIGN_LEFT));
+                    totalAmountTable.AddCell(CreateAlignedCell(vat.ToString("N2"), normalFont, Element.ALIGN_RIGHT));
+
+                    //TableMain
+                    // เซลล์ที่สอง: ใส่ totalAmountTable
+                    PdfPCell totalAmountCell = new PdfPCell(totalAmountTable); // ใส่ตารางตัวเลขที่สร้างไว้
+                    totalAmountCell.Border = Rectangle.NO_BORDER; // ไม่แสดงเส้นขอบ
+                    totalAmountCell.HorizontalAlignment = Element.ALIGN_RIGHT; // จัดแนวตารางในเซลล์
+                    mainTable.AddCell(totalAmountCell);
+
                     // เพิ่มตารางลงในเอกสาร
-                    document.Add(totalAmountTable);
+                    //document.Add(totalAmountTable);
+
+
+
+                    // เซลล์แรก: ใส่รูปภาพ
+                    string pmLink = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "NdsImages", "payment.png");
+
+
+                    iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(pmLink); // ใส่ path ของรูปภาพ
+                    image.ScaleToFit(100f, 100f); // ปรับขนาดรูปภาพ
+                    image.Alignment = Element.ALIGN_CENTER; // จัดรูปภาพให้อยู่ตรงกลาง
+
+                    PdfPCell imageCellpayment = new PdfPCell(image);
+                    imageCellpayment.Border = Rectangle.NO_BORDER; // ไม่แสดงเส้นขอบ
+                    imageCellpayment.HorizontalAlignment = Element.ALIGN_RIGHT; // จัดแนวรูปภาพในเซลล์
+                    imageCellpayment.PaddingTop = 10f;
+                    mainTable.AddCell(imageCellpayment);
+
+
+
+                    // เพิ่ม mainTable ลงในเอกสาร PDF
+                    document.Add(mainTable);
+
+
+
+
+
 
                     // ฟังก์ชันช่วยสร้างเซลล์ที่จัดตำแหน่ง
                     PdfPCell CreateAlignedCell(string text, Font font, int alignment)
@@ -444,8 +532,6 @@ namespace NDSPRO.Controllers
                         cell.HorizontalAlignment = alignment; // จัดตำแหน่งข้อความในเซลล์
                         return cell;
                     }
-
-
 
 
                     document.Add(new Paragraph("\n"));

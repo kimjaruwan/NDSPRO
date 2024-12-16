@@ -285,6 +285,22 @@
                         </table>
                         <!-- Label แสดงยอดรวม -->  @*   ng-model="TotalSum" *@
 
+
+                        <div class="row">
+                            <!-- shipping -->
+
+                            <div class="mb-3 col-md-3">
+                                <label class="col-form-label text-bold">Shipping price (THB) :</label>
+                                <input type="text"
+                                       class="form-control"
+                                       ng-model="QuoData.QuoShippingPrice"
+                                       ng-change="CalculateTotalSum()"
+                                       placeholder="Shipping price">
+                            </div>
+                        </div>
+
+
+
                         @* Map total price & total sum *@
                         <div class="row">
                             <!-- Customer Name -->

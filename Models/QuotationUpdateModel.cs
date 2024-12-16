@@ -26,7 +26,11 @@
 
         public string QuoType { get; set; }
 
-      
+        public int QuoShippingPrice { get; set; } = 0;
+
+
+
+
 
         //QuoLastUpdate
         public DateTime? QuoLastUpdate { get; set; } = DateTime.Now;

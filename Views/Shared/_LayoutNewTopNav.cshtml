@@ -8,19 +8,18 @@
 
     <link rel="shortcut icon" href="~/Images/YMTHolding.png">
     <!-- third party css -->
-    <link href="~/css/vendor/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css" />
-    <link href="~/css/vendor/datatables.bootstrap5.css" rel="stylesheet" />
+    @* <link href="~/css/vendor/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css" />
+    <link href="~/css/vendor/datatables.bootstrap5.css" rel="stylesheet" /> 
     <link href="~/css/vendor/responsive.bootstrap5.css" rel="stylesheet" />
     <link href="~/css/vendor/buttons.bootstrap5.css" rel="stylesheet" />
     <link href="~/css/vendor/select.bootstrap5.css" rel="stylesheet" />
     <link href="~/css/vendor/fixedHeader.bootstrap5.css" rel="stylesheet" />
-    <link href="~/css/vendor/fixedColumns.bootstrap5.css" rel="stylesheet" />
+    <link href="~/css/vendor/fixedColumns.bootstrap5.css" rel="stylesheet" /> *@
     <!-- third party css end -->
     <!-- App css -->
     <link href="~/css/icons.min.css" rel="stylesheet" type="text/css" />
     <link href="~/css/app.min.css" rel="stylesheet" type="text/css" id="app-style" />
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-    <script src="~/js/angular/app.js"></script>
+
 </head>
 <body class="loading" data-layout-color="light" data-layout="topnav" data-layout-mode="fluid" data-rightbar-onstart="true" ng-app="app">
     <div class="wrapper">
@@ -573,11 +572,11 @@
  
 
     <!-- third party js -->
-    <script src="~/js/vendor/jquery.datatables.min.js"></script>
+   @*  <script src="~/js/vendor/jquery.datatables.min.js"></script>
     <script src="~/js/vendor/dataTables.bootstrap5.js"></script>
- 
+  *@
   
-    <script src="~/js/vendor/dataTables.responsive.min.js"></script>
+    @* <script src="~/js/vendor/dataTables.responsive.min.js"></script>
     <script src="~/js/vendor/responsive.bootstrap5.min.js"></script>
     <script src="~/js/vendor/dataTables.buttons.min.js"></script>
     <script src="~/js/vendor/buttons.bootstrap5.min.js"></script>
@@ -587,14 +586,15 @@
     <script src="~/js/vendor/dataTables.keyTable.min.js"></script>
     <script src="~/js/vendor/dataTables.select.min.js"></script>
     <script src="~/js/vendor/fixedColumns.bootstrap5.min.js"></script>
-    <script src="~/js/vendor/fixedHeader.bootstrap5.min.js"></script>
+    <script src="~/js/vendor/fixedHeader.bootstrap5.min.js"></script> *@
     <!-- third party js ends -->
     <!-- demo app -->
-    <script src="~/js/pages/demo.datatable-init.js"></script>
+    <script src="~/js/pages/demo.datatable-init.js"></script> 
     <!-- end demo js-->
     @* เพิ่ม sweetalert *@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-   
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="~/js/angular/app.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

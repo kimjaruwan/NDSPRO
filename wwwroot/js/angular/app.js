@@ -32,7 +32,8 @@ app.controller('MyController', function ($scope, $http, $window) {
         QuoSubDistricts: '',
         QuoZipCode: '',
         QuoStatus: 0,
-        QuoRemark: ''
+        QuoRemark: '',
+        QuoShippingPrice: 0
         /*        QuoTaxID:''*/
 
     };
@@ -175,9 +176,29 @@ app.controller('MyController', function ($scope, $http, $window) {
 
     // ฟังก์ชันคำนวณยอดรวมทั้งหมด
     $scope.CalculateTotalSum = function () {
-        $scope.QuoData.TotalPrice = $scope.Entries.reduce(function (sum, entry) {
-            return sum + (entry.Quantity * entry.PricePerUnit);
-        }, 0);
+
+            //console.log("CalculateTotalSum Called");
+
+            // เช็คว่าเป็น Array - ตั้งต้นเป็น Array ว่าง (ต้องเช็คเพราะว่าบางทีมันมองเป็น NULL)
+            const entries = Array.isArray($scope.Entries) ? $scope.Entries : [];
+
+            //console.log("Entries:", entries);
+
+            // Entries
+            const entryTotal = entries.reduce(function (sum, entry) {
+                return sum + (entry.Quantity * entry.PricePerUnit);
+            }, 0);
+
+            //console.log("Entry Total:", entryTotal);
+
+            // เช็ค แปลง QuoShippingPrice เป็น Number
+            const shippingPrice = isNaN(parseFloat($scope.QuoData.QuoShippingPrice)) ? 0 : parseFloat($scope.QuoData.QuoShippingPrice);
+            //console.log("Parsed Shipping Price:", shippingPrice);
+
+            // Sum and update TotalPrice
+            $scope.QuoData.TotalPrice = entryTotal + shippingPrice;
+            /*console.log("Total Price Updated:", $scope.QuoData.TotalPrice);*/
+       
     };
 
     $scope.CalculateQty = function () {
@@ -237,7 +258,8 @@ app.controller('MyController', function ($scope, $http, $window) {
             QuoRemark: QuoData.Remark,
             QuoLastname: QuoData.QuoLastname,
             QuoTaxID: QuoData.QuoTaxID,
-            QuoType: SelectedTypeSell
+            QuoType: SelectedTypeSell,
+            QuoShippingPrice: QuoData.QuoShippingPrice
         }).then(function (response) {
             console.log("TYPE" + response.data);
             console.log(response.data.quotationNumber);
@@ -458,7 +480,8 @@ app.controller('MyController', function ($scope, $http, $window) {
                 //QuoZipCode: response.data.quoZipCode,
                 QuoStatus: response.data.quoStatus,
                 Remark: response.data.quoRemark,
-                QuoTaxID: response.data.quoTaxID
+                QuoTaxID: response.data.quoTaxID,
+                QuoShippingPrice: response.data.quoShippingPrice
 
             };
 
@@ -549,6 +572,7 @@ app.controller('MyController', function ($scope, $http, $window) {
             QuoDistricts: $scope.SelectedDistricts,
             QuoSubDistricts: $scope.SelectedSub,
             QuoZipCode: $scope.SZipcode,
+            QuoShippingPrice: $scope.QuoData.QuoShippingPrice,
             Entries: $scope.Entries.map(entry => ({       
                 ProductName: entry.SelectedStyleName,
                 SKUCodeFull: entry.SelectedSku,
