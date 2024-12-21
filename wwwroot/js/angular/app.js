@@ -1,7 +1,7 @@
 ﻿
 var app = angular.module('app', []);
 
-app.controller('MyController', function ($scope, $http, $window) {
+app.controller('MyController', function ($scope, $http, $window, $filter) {
     // List for Dropdowns
 
     $scope.QuoData = {
@@ -275,6 +275,9 @@ app.controller('MyController', function ($scope, $http, $window) {
                     console.log(response.data);
                     var QuoNumber = response.data[0].quotationNumber;
                     console.log(QuoNumber);
+
+                    // Update Quotation station-----*
+
                     Swal.fire({
                         icon: "success",
                         title: "Save Complete",
@@ -292,6 +295,7 @@ app.controller('MyController', function ($scope, $http, $window) {
                         text: "Failed to save entries."
                     });
                 });
+           // Add Update Quo Status
         }).catch(function (error) {
             console.error("Error:", error);
             alert("ไม่สามารถบันทึกข้อมูลได้");
@@ -335,6 +339,8 @@ app.controller('MyController', function ($scope, $http, $window) {
         $scope.GetProvince() // โหลด จังหวัด
         $scope.GetOrderType(); // โหลด Type order
         $scope.GetLoadRemark() // โหลด Master remark
+        
+
     };
 
 
@@ -438,6 +444,12 @@ app.controller('MyController', function ($scope, $http, $window) {
 
     //}
 
+    function formatDateToDDMMYYYY(date) {
+        const day = String(date.getDate()).padStart(2, '0'); // เติม 0 ด้านหน้าให้เป็น 2 หลัก
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // เดือนเริ่มจาก 0 จึงต้อง +1
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`; // รูปแบบ dd/mm/yyyy
+    }
 
 
     $scope.GetdataQuoForEdit = function (searchQuo) {
@@ -448,7 +460,9 @@ app.controller('MyController', function ($scope, $http, $window) {
             QuotationNumber: searchQuo
         }).then(function (response) {
 
-
+            const shipDate = response.data.shipDate
+                ? formatDateToDDMMYYYY(new Date(response.data.shipDate))
+                : '';
             /* $scope.SelectedProvinces = response.data.provinces;*/
 
             $scope.QuoData = {
@@ -459,7 +473,7 @@ app.controller('MyController', function ($scope, $http, $window) {
                 CompanyName: response.data.quoCompanyName,
                 OrderDate: new Date().toISOString().slice(0, 10), // รูปแบบ yyyy-MM-dd
                 OrderStatus: 'Processing', //กำหนดให้เป็น Processing
-                ShipDate: new Date(new Date().setDate(new Date().getDate() + 3)).toISOString().slice(0, 10), // วันที่ปัจจุบัน + 3 วันในรูปแบบ yyyy-MM-dd
+               
                 TotalQty: response.data.totalQty,
                 TotalPrice: response.data.totalPrice,
                 CustomerEmail: response.data.customerEmail,
@@ -478,12 +492,28 @@ app.controller('MyController', function ($scope, $http, $window) {
                 //QuoDistricts: response.data.quoDistricts,
                 //QuoSubDistricts: response.data.quoSubDistricts,
                 //QuoZipCode: response.data.quoZipCode,
-                QuoStatus: response.data.quoStatus,
+               
                 Remark: response.data.quoRemark,
                 QuoTaxID: response.data.quoTaxID,
-                QuoShippingPrice: response.data.quoShippingPrice
+                QuoShippingPrice: response.data.quoShippingPrice,
+                QuoStatus: response.data.quoStatus, // เพิ่ม QuoStatus
+                ShipDate: shipDate  // เพิ่ม ShipDate
+                
 
             };
+
+
+            console.log('QuoStatus999:', $scope.QuoData.QuoStatus);
+
+            $scope.isConfirmed = $scope.QuoData.QuoStatus.toString() === '1';
+            $scope.selectedShipDate = $scope.isConfirmed ? $scope.QuoData.ShipDate : '';
+
+            // ตรวจสอบผลลัพธ์
+            console.log('QuoStatus:', $scope.QuoData.QuoStatus);
+            console.log('isConfirmed:', $scope.isConfirmed);
+            console.log('ShipDate:', $scope.selectedShipDate);
+
+
 
             $scope.SelectedTypeSell = $scope.QuoData.QuoType;
             console.log($scope.QuoData.QuoType);
@@ -532,9 +562,10 @@ app.controller('MyController', function ($scope, $http, $window) {
                 $scope.CalculateTotalSum();
                 $scope.CalculateQty();
             });
-
+            $scope.GetLoadFiles(); //Load file
 
         })
+       
     }
             
     // Function Update
@@ -552,7 +583,23 @@ app.controller('MyController', function ($scope, $http, $window) {
             return;
         }
 
-        // Prepare data for update
+        //$scope.isConfirmed = false; // สถานะ Checkbox เริ่มต้น
+      /*  $scope.selectedShipDate = "";*/ // วันที่จัดส่งเริ่มต้น
+        var quoStatus = $scope.isConfirmed ? 1 : 0; // 1 for confirmed, 0 otherwise
+      /*  var shipDate = $scope.isConfirmed ? $scope.selectedShipDate : new Date().toISOString().slice(0, 10);*/ // Use selected date or default to today
+        var shipDate = $scope.isConfirmed
+            ? new Date($scope.selectedShipDate.split('/').reverse().join('-')) // แปลงจาก dd/mm/yyyy เป็น Date Object
+            : new Date(); // กรณีไม่ได้เลือกวันใช้วันปัจจุบัน
+
+        //console.log(shipDate);
+
+        //$scope.formattedDate = $filter('date')($scope.selectedShipDate, 'dd/MM/yyyy HH:mm:ss');
+
+
+        console.log($scope.formattedDate);
+        //// Prepare data for update
+        //console.log("ShipDate " + shipDate);
+        //console.log("Quo status " + quoStatus);
         const updateData = {
             QuotationNumber: $scope.QuoData.QuoNumber,
             QuoType: $scope.SelectedTypeSell,
@@ -560,7 +607,7 @@ app.controller('MyController', function ($scope, $http, $window) {
             QuoLastname: $scope.QuoData.QuoLastname,
             QuoCompanyName: $scope.QuoData.CompanyName,
             OrderDate: $scope.QuoData.OrderDate,
-            ShipDate: $scope.QuoData.ShipDate,
+            ShipDate: shipDate.toISOString(), 
             TotalQty: $scope.QuoData.TotalQty,
             TotalPrice: $scope.QuoData.TotalPrice,
             Remark: $scope.QuoData.Remark,
@@ -573,6 +620,7 @@ app.controller('MyController', function ($scope, $http, $window) {
             QuoSubDistricts: $scope.SelectedSub,
             QuoZipCode: $scope.SZipcode,
             QuoShippingPrice: $scope.QuoData.QuoShippingPrice,
+            QuoStatus: quoStatus,
             Entries: $scope.Entries.map(entry => ({       
                 ProductName: entry.SelectedStyleName,
                 SKUCodeFull: entry.SelectedSku,
@@ -583,7 +631,8 @@ app.controller('MyController', function ($scope, $http, $window) {
                 Price: entry.PricePerUnit
             }))
         };
-
+        console.log("updateData" + updateData.QuoStatus);
+        console.log("updateData" + updateData.ShipDate);
 
         // Send update request
         $http.post('/Home/UpdateQuotation', updateData)
@@ -625,6 +674,8 @@ app.controller('MyController', function ($scope, $http, $window) {
     };
 
 
+
+
     $scope.GetLoadRemark = function () {
         $http.get('/Home/GetLoadRemark')
             .then(function (response) {
@@ -661,6 +712,186 @@ app.controller('MyController', function ($scope, $http, $window) {
                 });
             });
     }
+
+    $scope.GetLoadOrderInfomation = function () {
+        $http.get('')
+            .then(function (response) {
+               /* $scope.Remarks = response.data; // เก็บข้อมูล Remark ใน Scope*/
+            }, function (error) {
+                console.error("Error loading remarks:", error);
+            });
+    };
+
+    $scope.GetPageQuotation = function () {
+       
+        $window.location.href = '/Home/Index';
+    }
+    $scope.GetPageOrderInformation = function () {
+
+        $window.location.href = '/Home/OrderInformation';
+    }
+
+    // File
+
+    $scope.UploadFile = function () {
+        var fileInput = document.getElementById('fileInput').files[0];
+
+        if (!fileInput) {
+            Swal.fire({
+                icon: "warning",
+                title: "No file selected",
+                text: "Please select a file before uploading."
+            });
+            return;
+        }
+
+        // ตรวจสอบและตั้งค่า fileDescription เป็นค่าว่างถ้าไม่มีการกรอก
+        if (!$scope.fileDescription || $scope.fileDescription.trim() === "") {
+            $scope.fileDescription = "";
+        }
+
+        var formData = new FormData();
+        formData.append("file", fileInput);
+        formData.append("fileDescription", $scope.fileDescription);
+        formData.append("quotationNumber", $scope.QuoData.QuoNumber); // รับ QuotationNumber จาก Model
+
+        $http.post('/Home/UploadFile', formData, {
+            headers: { 'Content-Type': undefined }
+        }).then(function (response) {
+            // ใช้ $scope.$apply เพื่อกระตุ้น AngularJS ให้จับการเปลี่ยนแปลง
+            $scope.$applyAsync(function () {
+                $scope.files.push(response.data.data); // เพิ่มไฟล์ใหม่ลงในตาราง
+            });
+
+            Swal.fire({
+                icon: "success",
+                title: "File uploaded",
+                text: "The file has been uploaded successfully."
+            });
+
+
+            $scope.fileDescription = ""; // ล้างคำอธิบาย
+            document.getElementById('fileInput').value = null; // ล้างไฟล์ที่เลือก
+        }).catch(function (error) {
+            console.error("Error uploading file:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Upload Failed",
+                text: "An error occurred while uploading the file."
+            });
+        });
+    };
+
+
+    $scope.downloadFile = function (filePath) {
+        window.open('/Home/DownloadFile?filePath=' + encodeURIComponent(filePath), '_blank');
+    };
+
+    $scope.deleteFile = function (filePath, index) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This file will be permanently deleted!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $http.delete('/Home/DeleteFile', {
+                    params: { filePath: filePath, quotationNumber: $scope.QuoData.QuoNumber }
+                }).then(function (response) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Deleted",
+                        text: response.data.Message
+                    });
+                    $scope.files.splice(index, 1); // ลบไฟล์ออกจากตาราง
+                }).catch(function (error) {
+                    console.error("Error deleting file:", error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Delete Failed",
+                        text: "An error occurred while deleting the file."
+                    });
+                });
+            }
+        });
+    };
+
+    $scope.GetLoadFiles = function () {
+        // ตรวจสอบว่ามี Quotation Number หรือไม่
+        console.log($scope.QuoData.QuoNumber + " Quo")
+        if (!$scope.QuoData.QuoNumber) {
+            console.warn("Quotation number is required.");
+            return;
+        }
+
+        // เรียก API ดึงข้อมูลไฟล์
+        $http.get('/Home/GetQuotationFiles', {
+            params: { quotationNumber: $scope.QuoData.QuoNumber }
+           
+        }).then(function (response) {
+            $scope.files = response.data; // เก็บข้อมูลไฟล์ใน $scope.files
+        }, function (error) {
+            console.error("Error loading files:", error);
+        });
+    };
+
+
+    $scope.updateShipmentDate = function () {
+        if ($scope.isConfirmed) {
+            // กรณี Confirm เป็นจริง ให้ตั้งค่า ShipDate
+            $scope.selectedShipDate = $scope.QuoData.ShipDate || '';
+        } else {
+            // กรณีไม่ Confirm ให้ลบค่า ShipDate
+            $scope.clearShipmentDate();
+        }
+    };
+
+    $scope.clearShipmentDate = function () {
+        $scope.selectedShipDate = ''; // เคลียร์ค่าของ ShipDate
+    };
+
+    $scope.$watch('isConfirmed', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.updateShipmentDate();
+        }
+    });
+
+    $scope.viewQuotation = function (quotationNumber) {
+        // ดึงข้อมูล Quotation โดยใช้ API
+      
+    };
+
+    $scope.deleteQuotation = function (quotationNumber) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to delete this Quotation?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                $http.post('/Home/DeleteQuo', { QuotationNumber: quotationNumber }).then(function () {
+                    Swal.fire('Deleted!', 'Your Quotation has been deleted.', 'success');
+                 /*   $scope.loadQuotations();*/ // โหลดข้อมูลใหม่
+                }, function (error) {
+                    Swal.fire('Error', 'Failed to delete quotation.', 'error');
+                });
+            }
+        });
+    };
+
+    //$scope.loadQuotations = function () {
+    //    $http.get('/Home/GetQuotations').then(function (response) {
+    //        $scope.dataquo = response.data.data; // โหลด Quotation ใหม่
+    //    });
+    //};
+    
+
 
 
 });

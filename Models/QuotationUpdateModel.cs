@@ -28,6 +28,8 @@
 
         public int QuoShippingPrice { get; set; } = 0;
 
+        public int QuoStatus { get; set; } = 0;
+
 
 
 

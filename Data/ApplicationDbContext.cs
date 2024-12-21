@@ -29,5 +29,7 @@ namespace NDSPRO.Data
       
         public DbSet<MasterRemark> YmtgRemark { get; set; }
 
+        public DbSet<QuotationFile> QuotationFiles { get; set; }
+
     }
 }

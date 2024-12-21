@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\NdsImages\" />
+    <Folder Include="wwwroot\Uploads\" />
   </ItemGroup>
 
 </Project>

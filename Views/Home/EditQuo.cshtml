@@ -3,7 +3,7 @@
     Layout = "~/Views/Shared/_LayoutNewTopNav.cshtml";
 }
 
- @model QuotationViewModel // เอา Model มารับ 
+ @model QuotationViewModel // เอา Model มารับ
 
 <body ng-app="app" ng-controller="MyController" ng-init="GetdataQuoForEdit('@Model.QuotationNumber')">
     <div class="container mt-3">
@@ -30,10 +30,10 @@
                 </div>
                 <div class="mb-3 col-md-4">
                     @* <label class="col-form-label text-bold">Product Type</label>
-                        <select ng-model="SelectedTypePD"
-                        class="form-control"
-                        ng-options="x for x in ListTypePD" >
-                        </select> *@
+                    <select ng-model="SelectedTypePD"
+                    class="form-control"
+                    ng-options="x for x in ListTypePD" >
+                    </select> *@
                 </div>
 
             </div>
@@ -237,10 +237,11 @@
 
                         </div>
                     </div>
-                 @*    {{Entries}} *@
+                    @*    {{Entries}} *@
                     <!-- Table Section -->
                     <div class="mt-4">
                         <h3 class="text-bold">รายการสินค้า</h3>
+                        <div class="table-responsive">
                         <table class="table table-striped dt-responsive nowrap w-100">
                             <thead>
                                 <tr>
@@ -254,20 +255,7 @@
                                     <th>การจัดการ</th>
                                 </tr>
                             </thead>
-                           @*  <tbody>
-                                <tr ng-repeat="entry in Entries">
-                                    <td>{{entry.productName}}</td>
-                                    <td>{{entry.skuCode}}</td>
-                                    <td>{{entry.size}}</td>
-                                    <td>{{entry.color}}</td>
-                                    <td>{{entry.qty}}</td>
-                                    <td>{{entry.price | number:2}}</td>
-                                    <td>{{entry.qty * entry.price | number:2}}</td>
-                                    <td>
-                                        <button class="btn btn-danger btn-sm" ng-click="RemoveEntry($index)">ลบ</button>
-                                    </td>
-                                </tr>
-                            </tbody> *@
+
                             <tbody>
                                 <tr ng-repeat="entry in Entries">
                                     <td>{{entry.SelectedStyleName}}</td>
@@ -283,6 +271,7 @@
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
                         <!-- Label แสดงยอดรวม -->  @*   ng-model="TotalSum" *@
 
 
@@ -325,14 +314,6 @@
                     </div>
 
 
-                    <!-- Notes Input -->
-                   @*  <div class="mb-3 col-md-12">
-                        <label class="col-form-label text-bold">หมายเหตุ</label>
-                        <textarea class="form-control"
-                                  ng-model="QuoData.Remark"
-                                  placeholder="Remark"></textarea>
-                    </div> *@
-
 
 
                     <div class="mb-3 col-md-12">
@@ -354,14 +335,142 @@
                 </div>
             </div>
         </div>
+
+
+        <!-- Input สำหรับอัปโหลด -->
+        <div class="mb-4 p-3 border rounded bg-light">
+            <h4 class="text-bold">Upload and Download Files</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="file" id="fileInput" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" ng-model="fileDescription" placeholder="Enter file description">
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-success w-100" ng-click="UploadFile()">Upload</button>
+                </div>
+            </div>
+        </div>
+        <!-- ตารางแสดงไฟล์ -->
+        <div class="mb-4 p-3 border rounded">
+
+            <div class="table-responsive">
+            <table class="table table-bordered mt-4">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>File Name</th>
+                        <th>Description</th>
+                        <th>Path</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="file in files">
+                        <td>{{$index + 1}}</td>
+                        <td>{{file.fileName}}</td>
+                        <td>{{file.fileDescription}}</td>
+                        <td>{{file.filePath}}</td>
+                        <td>{{file.createdAt}}</td>
+                        <td>
+                            <!-- ปุ่มดาวน์โหลด -->
+                            <button class="btn btn-info btn-sm" ng-click="downloadFile(file.filePath)">
+                                Download
+                            </button>
+                            <!-- ปุ่มลบ -->
+                            <button class="btn btn-danger btn-sm" ng-click="deleteFile(file.filePath, $index)">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <div class="mb-4 p-3 border rounded bg-light">
+            <h4 class="text-bold">Update Status</h4>
+
+            <!-- Confirm Checkbox -->
+            <div class="form-check mb-3">
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="confirmCheckbox"
+                       ng-model="isConfirmed"
+                       ng-change="toggleShipmentDate()">
+                <label class="form-check-label" for="confirmCheckbox">
+                    Confirm to order
+                </label>
+            </div>
+
+            <!-- Shipment Date Section -->
+      
+           
+            <div id="shipmentDateSection" class="row" ng-show="isConfirmed">
+                <!-- Datepicker -->
+                <div class="col-md-4">
+                    <label for="datepicker" class="form-label">Shipment Date</label>
+                    <input type="text"
+                           id="datepicker"
+                           class="form-control"
+                           ng-model="selectedShipDate"
+                           placeholder="Choose Date (dd/mm/yyyy)"
+                           readonly>
+                </div>
+
+                <!-- Clear Button -->
+                <div class="col-md-2 d-flex align-items-end" > 
+                    <button type="button"
+                            class="btn btn-danger"
+                            onclick="clearShipmentDate()">
+                        Clear Date
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
     </div>
     <!-- Action Buttons // controller Update-->
     <div class="mt-4">
         <button class="btn btn-primary" ng-click="UpdateQuotation()">
-           Save
+            Save
         </button>
-          @*   <button class="btn btn-secondary" ng-click="ClearForm()">ล้างข้อมูล</button> *@
+        @*   <button class="btn btn-secondary" ng-click="ClearForm()">ล้างข้อมูล</button> *@
         <button class="btn btn-danger" ng-click="Cancel()">Cancel</button>
     </div>
+    <script>
+        // เปิด/ปิดการใช้งานของ Shipment Date Section
+        function toggleShipmentDate() {
+            const checkbox = document.getElementById('confirmCheckbox');
+            const shipmentSection = document.getElementById('shipmentDateSection');
+            shipmentSection.style.display = checkbox.checked ? 'flex' : 'none'; // ใช้ Flex เพื่อให้จัดปุ่มและ Datepicker ในแถวเดียวกัน
+
+            // เคลียร์วันที่เมื่อยกเลิก Confirm
+            if (!checkbox.checked) {
+                clearShipmentDate();
+            }
+        }
+
+        // ฟังก์ชัน Clear Shipment Date
+        function clearShipmentDate() {
+            const datepicker = document.getElementById('datepicker');
+            datepicker.value = ''; // ลบค่าที่เลือก
+        }
+
+        // ตั้งค่า Datepicker
+        document.addEventListener("DOMContentLoaded", function () {
+            $('#datepicker').datepicker({
+                format: 'dd/mm/yyyy', // รูปแบบวันที่ dd/mm/yyyy
+                autoclose: true,      // ปิดเมื่อเลือกวันที่
+                todayHighlight: true  // ไฮไลต์วันที่วันนี้
+            });
+        });
+    </script>
+
+
+
 
 </body>

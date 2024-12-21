@@ -1,22 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using NDSPRO.Models;
 using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+using System.Threading.Tasks;
 using NDSPRO.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Collections;
-using Microsoft.EntityFrameworkCore;
-//using Newtonsoft.Json.Linq;
-using Azure.Core;
-using System.Drawing.Drawing2D;
-using iText.Svg.Renderers.Path.Impl;
-using iText.StyledXmlParser.Jsoup.Nodes;
 
+using System.IO;
+using System.Web;
+using Microsoft.AspNetCore.Hosting;
+using static System.Net.WebRequestMethods;
 namespace NDSPRO.Controllers
 {
     public class HomeController : Controller
@@ -24,11 +15,21 @@ namespace NDSPRO.Controllers
 
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly string _uploadPath;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _logger = logger;
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
+            _uploadPath = Path.Combine(_webHostEnvironment.WebRootPath, "Uploads");
+
+            // สร้างโฟลเดอร์ Upload ถ้ายังไม่มี
+            if (!Directory.Exists(_uploadPath))
+            {
+                Directory.CreateDirectory(_uploadPath);
+            }
         }
 
 
@@ -38,6 +39,17 @@ namespace NDSPRO.Controllers
             return View();
         }
 
+
+        public IActionResult MainLinkIndex()
+        {
+            //เริ่มต้นเป็นหน้าแรก
+            return View();
+        }
+        public IActionResult OrderInformation()
+        {
+            //เริ่มต้นเป็นหน้าแรก
+            return View();
+        }
 
         [HttpPost]
         public ActionResult CheckUser()
@@ -403,8 +415,7 @@ namespace NDSPRO.Controllers
 
             var dataquoEditOrder = _context.YmtgOrders.Where(z => z.QuotationNumber == request.QuotationNumber)
                 .FirstOrDefault();
-            //var dataquoEditProduct = _context.YmtgProducts.Where(z => z.QuotationNumber == request.QuotationNumber)
-            //    .GroupBy(p => p.QuotationNumber).ToList();
+     
 
             return Ok(dataquoEditOrder);
         }
@@ -414,8 +425,7 @@ namespace NDSPRO.Controllers
         public ActionResult GetForEditProduct([FromBody] QuotationViewModel searchQuo)
         {
 
-            //var dataquoEditOrder = _context.YmtgOrders.Where(z => z.QuotationNumber == request.QuotationNumber)
-            //    .FirstOrDefault();
+       
             var dataquoEditProduct = _context.YmtgProducts.Where(z => z.QuotationNumber == searchQuo.QuotationNumber).ToList();
 
             return Ok(dataquoEditProduct);
@@ -443,7 +453,7 @@ namespace NDSPRO.Controllers
             // อัปเดตข้อมูลใน Order
             existingOrder.CustomerName = updateModel.CustomerName;
             existingOrder.OrderDate = updateModel.OrderDate;
-            existingOrder.ShipDate = updateModel.ShipDate;
+            existingOrder.ShipDate = updateModel.ShipDate; // Map
             existingOrder.TotalQty = updateModel.TotalQty;
             existingOrder.TotalPrice = updateModel.TotalPrice;
             existingOrder.QuoRemark = updateModel.Remark;
@@ -461,6 +471,8 @@ namespace NDSPRO.Controllers
             existingOrder.QuoType = updateModel.QuoType;
             existingOrder.QuoLastUpdate = DateTime.Now;
             existingOrder.QuoShippingPrice = updateModel.QuoShippingPrice;
+            existingOrder.QuoStatus = updateModel.QuoStatus; // Map
+
 
             //TaxID / Email
             // บันทึกการเปลี่ยนแปลง
@@ -575,6 +587,199 @@ namespace NDSPRO.Controllers
 
         }
 
+        //Load ข้อมูล Order
+        [HttpGet]
+        public ActionResult GetLoadOrderInfomation()
+        {
+
+            var GetLoadRemark = _context.YmtgRemark.Select(k => k.RemarkQuo).ToList();
+
+            return Ok(GetLoadRemark);
+
+        }
+
+
+        // File
+
+        [HttpPost]
+        public IActionResult UploadFile(IFormFile file, [FromForm] string fileDescription, [FromForm] string quotationNumber)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Invalid file.");
+            }
+
+            if (string.IsNullOrEmpty(quotationNumber))
+            {
+                return BadRequest("Quotation number is required.");
+            }
+
+            if (string.IsNullOrEmpty(fileDescription))
+            {
+                fileDescription = "";
+
+            }
+            // สร้างโฟลเดอร์สำหรับ Quotation Number
+            var quotationFolderPath = Path.Combine(_uploadPath, quotationNumber);
+            if (!Directory.Exists(quotationFolderPath))
+            {
+                Directory.CreateDirectory(quotationFolderPath);
+            }
+
+            // บันทึกไฟล์ลงในโฟลเดอร์
+            var fileName = Path.GetFileName(file.FileName);
+            var filePath = Path.Combine(quotationFolderPath, fileName);
+
+
+            //Check ชื่อไฟล์ซ้ำ
+            int counter = 1;
+            while (System.IO.File.Exists(filePath))
+            {
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                var fileExtension = Path.GetExtension(fileName);
+                fileName = $"{fileNameWithoutExtension}_{counter++}{fileExtension}";
+                filePath = Path.Combine(quotationFolderPath, fileName);
+            }
+
+
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                file.CopyTo(stream);
+            }
+
+            // บันทึกข้อมูลลงฐานข้อมูล
+            var newFile = new QuotationFile
+            {
+                QuotationNumber = quotationNumber,
+                FileName = fileName,
+                FilePath = Path.Combine("Uploads", quotationNumber, fileName), // เก็บ Path แบบ Relative
+                FileDescription = fileDescription,
+                CreatedAt = DateTime.Now
+            };
+            _context.QuotationFiles.Add(newFile);
+            _context.SaveChanges();
+
+            //return Ok(newFile);
+            return Json(new { data = newFile });
+        }
+
+        [HttpGet]
+        public IActionResult DownloadFile(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return BadRequest("File path is required.");
+            }
+            // ลบคำว่า "Uploads" ออกจาก filePath ถ้ามี
+            if (filePath.StartsWith("Uploads", StringComparison.OrdinalIgnoreCase))
+            {
+                filePath = filePath.Substring("Uploads".Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            }
+
+            // รวมเส้นทางไฟล์
+            var absolutePath = Path.Combine(_uploadPath, filePath);
+
+            if (!System.IO.File.Exists(absolutePath))
+            {
+                return NotFound("File not found.");
+            }
+
+
+            var fileName = Path.GetFileName(absolutePath);
+            return PhysicalFile(absolutePath, "application/octet-stream", fileName);
+        }
+
+        [HttpDelete]
+        public IActionResult DeleteFile(string filePath, string quotationNumber)
+        {
+            if (string.IsNullOrEmpty(filePath) || string.IsNullOrEmpty(quotationNumber))
+            {
+                return BadRequest("File path and Quotation number are required.");
+            }
+
+            // ลบคำว่า "Uploads" ออกจาก filePath ถ้ามี
+            if (filePath.StartsWith("Uploads", StringComparison.OrdinalIgnoreCase))
+            {
+                filePath = filePath.Substring("Uploads".Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            }
+
+            var absolutePath = Path.Combine(_uploadPath, filePath);
+            if (System.IO.File.Exists(absolutePath))
+            {
+                System.IO.File.Delete(absolutePath);
+            }
+
+            var formattedFilePath = "Uploads\\" + filePath;
+            // ลบข้อมูลจากฐานข้อมูล
+            var fileRecord = _context.QuotationFiles
+                .FirstOrDefault(f => f.FilePath == formattedFilePath && f.QuotationNumber == quotationNumber);
+            if (fileRecord != null)
+            {
+                _context.QuotationFiles.Remove(fileRecord);
+                _context.SaveChanges();
+            }
+
+            return Ok("File deleted successfully.");
+        }
+
+
+        [HttpGet]
+        public IActionResult GetQuotationFiles(string quotationNumber)
+            
+        {
+            if (string.IsNullOrEmpty(quotationNumber))
+            {
+                return BadRequest("Quotation number is required.");
+            }
+
+            // ดึงข้อมูลจากฐานข้อมูลที่เกี่ยวข้องกับ QuotationNumber
+            var files = _context.QuotationFiles
+                .Where(f => f.QuotationNumber == quotationNumber)
+                .Select(f => new
+                {
+                    f.Id,
+                    f.FileName,
+                    f.FilePath,
+                    f.FileDescription,
+                    CreatedAt = f.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                })
+                .ToList();
+
+            return Ok(files);
+
+        }
+
+
+        //Update Status Quoattion Confirm
+        [HttpPost]
+        public ActionResult UpdateQuoStatus([FromBody] QuotationUpdateModel quoNumber)
+        {
+            if (quoNumber == null)
+            {
+                return BadRequest("Invalid data.");
+            }
+
+
+            var existingOrder = _context.YmtgOrders.FirstOrDefault(q => q.QuotationNumber == quoNumber.QuotationNumber);
+            if (existingOrder == null)
+            {
+                return NotFound("Quotation not found.");
+            }
+
+
+            existingOrder.QuoStatus = 1;
+
+            existingOrder.QuoLastUpdate = DateTime.Now;
+
+            //existingOrder.ShipDate = "";
+
+
+           _context.SaveChanges();
+
+            return Ok(new { quoNumber.QuotationNumber });
+
+        }
 
 
     }
