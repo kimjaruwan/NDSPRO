@@ -31,5 +31,11 @@ namespace NDSPRO.Data
 
         public DbSet<QuotationFile> QuotationFiles { get; set; }
 
+        public DbSet<OrderModel> OrderModel { get; set; }
+
+        public DbSet<ProductModel> ProductModel { get; set; }
+
+        public DbSet<AttachmentsModel> AttachmentsModel { get; set; }
+        //AttachmentsModel
     }
 }

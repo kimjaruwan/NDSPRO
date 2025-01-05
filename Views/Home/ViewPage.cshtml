@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Edit Quotations";
+    ViewBag.Title = "View Quotations";
     Layout = "~/Views/Shared/_LayoutNewTopNav.cshtml";
 }
 
@@ -7,7 +7,7 @@
 
 <body ng-app="app" ng-controller="MyController" ng-init="GetdataQuoForEdit('@Model.QuotationNumber')">
     <div class="container mt-3">
-        <h2 class="text-bold mb-4">ใบเสนอราคา (Edit Quotation)</h2>
+        <h2 class="text-bold mb-4">ใบเสนอราคา (Read only)</h2>
 
 
         <!-- Quotation Type -->
@@ -25,7 +25,8 @@
                     <label class="col-form-label text-bold">Quotation Type</label>
                     <select ng-model="SelectedTypeSell"
                             class="form-control"
-                            ng-options=" x for x in ListTypeSell">
+                            ng-options=" x for x in ListTypeSell"
+                            disabled>
                     </select>
                 </div>
                 <div class="mb-3 col-md-4">
@@ -52,14 +53,16 @@
                     <input type="text"
                            class="form-control"
                            ng-model="QuoData.CustomerName"
-                           placeholder="First name">
+                           placeholder="First name"
+                           readonly>
                 </div>
                 <div class="mb-3 col-md-6">
                     <label class="col-form-label text-bold">Last name</label>
                     <input type="text"
                            class="form-control"
                            ng-model="QuoData.QuoLastname"
-                           placeholder="Last name">
+                           placeholder="Last name"
+                           readonly>
                 </div>
             </div>
             <div class="row">
@@ -69,7 +72,8 @@
                     <input type="text"
                            class="form-control"
                            ng-model="QuoData.CompanyName"
-                           placeholder="Company name">
+                           placeholder="Company name"
+                           readonly>
                 </div>
 
             </div>
@@ -79,7 +83,8 @@
                     <label class="form-label text-bold">Address</label>
                     <textarea class="form-control"
                               ng-model="QuoData.CustomerAddress"
-                              placeholder="Address"></textarea>
+                              placeholder="Address"
+                              readonly></textarea>
                 </div>
             </div>
             <div class="row">
@@ -88,7 +93,8 @@
                     <select ng-model="SelectedProvinces"
                             class="form-control"
                             ng-options="x for x in ListProvinces" ng-change="GetListDistricts(SelectedProvinces)"
-                            placeholder="Provinces">
+                            placeholder="Provinces"
+                            disabled>
                     </select>
                 </div>
                 <div class="mb-3 col-md-6">
@@ -96,7 +102,8 @@
                     <select ng-model="SelectedDistricts"
                             class="form-control"
                             ng-options="x for x in ListDistricts" ng-change="GetListSub(SelectedDistricts,SelectedProvinces)"
-                            placeholder="Districts">
+                            placeholder="Districts"
+                            disabled>
                     </select>
                 </div>
             </div>
@@ -106,7 +113,8 @@
                     <select ng-model="SelectedSub"
                             class="form-control"
                             ng-options="x for x in ListSub" ng-change="GetListZipcode(SelectedSub,SelectedDistricts)"
-                            placeholder="Sub Districts">
+                            placeholder="Sub Districts"
+                            disabled>
                     </select>
                 </div>
                 <div class="mb-3 col-md-6">
@@ -127,7 +135,8 @@
                            ng-model="QuoData.QuoTaxID"
                            placeholder="Tax ID"
                            maxlength="13"
-                           onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                           onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                           readonly>
                 </div>
 
             </div>
@@ -139,7 +148,8 @@
                     <input type="text"
                            class="form-control"
                            ng-model="QuoData.CustomerEmail"
-                           placeholder="Email">
+                           placeholder="Email"
+                           readonly>
                 </div>
                 <div class="mb-3 col-md-4">
                     <label class="col-form-label text-bold">Tel.</label>
@@ -147,10 +157,16 @@
                            class="form-control"
                            ng-model="QuoData.CustomerPhone"
                            maxlength="10"
-                           placeholder="Tel.">
+                           placeholder="Tel."
+                           readonly>
                 </div>
             </div>
         </div>
+
+
+
+
+
 
     </div>
 
@@ -167,7 +183,8 @@
                     <select ng-model="QuoData.StyleName"
                             class="form-control"
                             ng-options="x for x in ListDropSku"
-                            ng-change="GetSkuCode(QuoData.StyleName)">
+                            ng-change="GetSkuCode(QuoData.StyleName)"
+                            disabled>
                     </select>
 
 
@@ -189,7 +206,7 @@
                             <!-- Size Dropdown -->
                             <div class="col-md-2">
                                 <label for="sizeSelect" class="form-label text-bold">เลือกไซส์:</label>
-                                <select id="sizeSelect" class="form-control" ng-model="NewEntry.SelectedSize" ng-options="x for x in ListSizes">
+                                <select id="sizeSelect" class="form-control" ng-model="NewEntry.SelectedSize" ng-options="x for x in ListSizes" disabled>
                                     <option value="">เลือกไซส์</option>
                                 </select>
                             </div>
@@ -197,7 +214,7 @@
                             <!-- Color Dropdown -->
                             <div class="col-md-2">
                                 <label for="colorSelect" class="form-label text-bold">เลือกสี:</label>
-                                <select id="colorSelect" class="form-control" ng-model="NewEntry.SelectedColor" ng-options=" x for x in ListColors">
+                                <select id="colorSelect" class="form-control" ng-model="NewEntry.SelectedColor" ng-options=" x for x in ListColors" disabled>
                                     <option value="">เลือกสี</option>
                                 </select>
                             </div>
@@ -205,7 +222,7 @@
                             <!-- Quantity Input -->
                             <div class="col-md-2">
                                 <label for="quantityInput" class="form-label text-bold">จำนวน:</label>
-                                <input type="number" id="quantityInput" class="form-control" ng-model="NewEntry.Quantity" placeholder="กรอกจำนวนสินค้า" min="0">
+                                <input type="number" id="quantityInput" class="form-control" ng-model="NewEntry.Quantity" placeholder="กรอกจำนวนสินค้า" min="0" readonly>
 
                             </div>
 
@@ -213,7 +230,7 @@
                             <!-- Price Input -->
                             <div class="col-md-2">
                                 <label for="priceInput" class="form-label text-bold">ราคา (ต่อหน่วย):</label>
-                                <input type="number" id="priceInput" class="form-control" ng-model="NewEntry.PricePerUnit" placeholder="กรอกราคาต่อหน่วย" min="0">
+                                <input type="number" id="priceInput" class="form-control" ng-model="NewEntry.PricePerUnit" placeholder="กรอกราคาต่อหน่วย" min="0" readonly>
 
                             </div>
 
@@ -226,9 +243,9 @@
 
                             <!-- Add Button -->
 
-                            <div class="col-md-2 d-flex align-items-end mt-3">
+                           @*  <div class="col-md-2 d-flex align-items-end mt-3">
                                 <button class="btn btn-primary w-100" ng-click="AddEntry()">เพิ่ม</button>
-                            </div>
+                            </div> *@
 
                         </div>
                     </div>
@@ -237,35 +254,35 @@
                     <div class="mt-4">
                         <h3 class="text-bold">รายการสินค้า</h3>
                         <div class="table-responsive">
-                        <table class="table table-striped dt-responsive nowrap w-100">
-                            <thead>
-                                <tr>
-                                    <th>Style name</th>
-                                    <th>SKU</th>
-                                    <th>ไซส์</th>
-                                    <th>สี</th>
-                                    <th>จำนวน</th>
-                                    <th>ราคา (ต่อหน่วย)</th>
-                                    <th>ราคารวม</th>
-                                    <th>การจัดการ</th>
-                                </tr>
-                            </thead>
+                            <table class="table table-striped dt-responsive nowrap w-100">
+                                <thead>
+                                    <tr>
+                                        <th>Style name</th>
+                                        <th>SKU</th>
+                                        <th>ไซส์</th>
+                                        <th>สี</th>
+                                        <th>จำนวน</th>
+                                        <th>ราคา (ต่อหน่วย)</th>
+                                        <th>ราคารวม</th>
+                                        @* <th>การจัดการ</th> *@
+                                    </tr>
+                                </thead>
 
-                            <tbody>
-                                <tr ng-repeat="entry in Entries">
-                                    <td>{{entry.SelectedStyleName}}</td>
-                                    <td>{{entry.SelectedSku}}</td>
-                                    <td>{{entry.SelectedSize}}</td>
-                                    <td>{{entry.SelectedColor}}</td>
-                                    <td>{{entry.Quantity}}</td>
-                                    <td>{{entry.PricePerUnit | number:2}}</td>
-                                    <td>{{entry.Quantity * entry.PricePerUnit | number:2}}</td>
-                                    <td>
-                                        <button class="btn btn-danger btn-sm" ng-click="RemoveEntry($index)">ลบ</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                <tbody>
+                                    <tr ng-repeat="entry in Entries">
+                                        <td>{{entry.SelectedStyleName}}</td>
+                                        <td>{{entry.SelectedSku}}</td>
+                                        <td>{{entry.SelectedSize}}</td>
+                                        <td>{{entry.SelectedColor}}</td>
+                                        <td>{{entry.Quantity}}</td>
+                                        <td>{{entry.PricePerUnit | number:2}}</td>
+                                        <td>{{entry.Quantity * entry.PricePerUnit | number:2}}</td>
+                                       @*  <td>
+                                            <button class="btn btn-danger btn-sm" ng-click="RemoveEntry($index)">ลบ</button>
+                                        </td> *@
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                         <!-- Label แสดงยอดรวม -->  @*   ng-model="TotalSum" *@
 
@@ -279,7 +296,8 @@
                                        class="form-control"
                                        ng-model="QuoData.QuoShippingPrice"
                                        ng-change="CalculateTotalSum()"
-                                       placeholder="Shipping price">
+                                       placeholder="Shipping price"
+                                       readonly>
                             </div>
                         </div>
 
@@ -318,14 +336,15 @@
                                 ng-options="remark for remark in Remarks"
                                 ng-model="selectedRemark"
                                 ng-change="QuoData.Remark = selectedRemark"
-                                placeholder="เลือกหรือพิมพ์หมายเหตุ">
+                                placeholder="เลือกหรือพิมพ์หมายเหตุ" disabled>
                             <option value="">-- เลือกหมายเหตุ --</option>
                         </select>
 
                         <!-- Textarea สำหรับพิมพ์หมายเหตุ -->
                         <textarea class="form-control"
                                   ng-model="QuoData.Remark"
-                                  placeholder="Remark"></textarea>
+                                  placeholder="Remark"
+                                  readonly ></textarea>
                     </div>
                 </div>
             </div>
@@ -337,51 +356,51 @@
             <h4 class="text-bold">Upload and Download Files</h4>
             <div class="row">
                 <div class="col-md-4">
-                    <input type="file" id="fileInput" class="form-control">
+                    <input type="file" id="fileInput" class="form-control" disabled>
                 </div>
                 <div class="col-md-4">
-                    <input type="text" class="form-control" ng-model="fileDescription" placeholder="Enter file description">
+                    <input type="text" class="form-control" ng-model="fileDescription" placeholder="Enter file description" disabled>
                 </div>
-                <div class="col-md-4">
+          @*       <div class="col-md-4">
                     <button class="btn btn-success w-100" ng-click="UploadFile()">Upload</button>
-                </div>
+                </div> *@
             </div>
         </div>
         <!-- ตารางแสดงไฟล์ -->
         <div class="mb-4 p-3 border rounded">
 
             <div class="table-responsive">
-            <table class="table table-bordered mt-4">
-                <thead>
-                    <tr>
-                        <th>No.</th>
-                        <th>File Name</th>
-                        <th>Description</th>
-                        <th>Path</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="file in files">
-                        <td>{{$index + 1}}</td>
-                        <td>{{file.fileName}}</td>
-                        <td>{{file.fileDescription}}</td>
-                        <td>{{file.filePath}}</td>
-                         <td>{{file.createdAt | 'dd/MM/yyyy HH:mm:ss'}}</td>
-                        <td>
-                            <!-- ปุ่มดาวน์โหลด -->
-                            <button class="btn btn-info btn-sm" ng-click="downloadFile(file.filePath)">
-                                Download
-                            </button>
-                            <!-- ปุ่มลบ -->
-                            <button class="btn btn-danger btn-sm" ng-click="deleteFile(file.filePath, $index)">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                <table class="table table-bordered mt-4">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>File Name</th>
+                            <th>Description</th>
+                            <th>Path</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="file in files">
+                            <td>{{$index + 1}}</td>
+                            <td>{{file.fileName}}</td>
+                            <td>{{file.fileDescription}}</td>
+                            <td>{{file.filePath}}</td>
+                            <td>{{file.createdAt}}</td>
+                            <td>
+                                <!-- ปุ่มดาวน์โหลด -->
+                                <button class="btn btn-info btn-sm" ng-click="downloadFile(file.filePath)">
+                                    Download
+                                </button>
+                                <!-- ปุ่มลบ -->
+                               @*  <button class="btn btn-danger btn-sm" ng-click="deleteFile(file.filePath, $index)">
+                                    Delete
+                                </button> *@
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -394,15 +413,16 @@
                        type="checkbox"
                        id="confirmCheckbox"
                        ng-model="isConfirmed"
-                       ng-change="toggleShipmentDate()">
+                       ng-change="toggleShipmentDate()"
+                       disabled>
                 <label class="form-check-label" for="confirmCheckbox">
                     Confirm to order
                 </label>
             </div>
 
             <!-- Shipment Date Section -->
-      
-           
+
+
             <div id="shipmentDateSection" class="row" ng-show="isConfirmed">
                 <!-- Datepicker -->
                 <div class="col-md-4">
@@ -412,17 +432,17 @@
                            class="form-control"
                            ng-model="selectedShipDate"
                            placeholder="Choose Date (dd/mm/yyyy)"
-                           readonly>
+                           disabled>
                 </div>
 
                 <!-- Clear Button -->
-                <div class="col-md-2 d-flex align-items-end" > 
+               @*  <div class="col-md-2 d-flex align-items-end">
                     <button type="button"
                             class="btn btn-danger"
                             onclick="clearShipmentDate()">
                         Clear Date
                     </button>
-                </div>
+                </div> *@
             </div>
         </div>
 
@@ -430,11 +450,12 @@
     </div>
     <!-- Action Buttons // controller Update-->
     <div class="mt-4">
-        <button class="btn btn-primary" ng-click="UpdateQuotation()">
-            Save
+        <button class="btn btn-primary" ng-click="backHome()">
+            Back to Home page
         </button>
         @*   <button class="btn btn-secondary" ng-click="ClearForm()">ล้างข้อมูล</button> *@
-        <button class="btn btn-danger" ng-click="Cancel()">Cancel</button>
+     @*    <button class="btn btn-danger" ng-click="Cancel()">Cancel</button> *@
+        <button class="btn btn-danger" ng-click="deleteQuotation()" ng-hide="QuoData.QuoStatus !== 0">Delete Quotation</button>
     </div>
     <script>
         // เปิด/ปิดการใช้งานของ Shipment Date Section

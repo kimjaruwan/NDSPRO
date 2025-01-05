@@ -1,0 +1,142 @@
+﻿@{
+    ViewBag.Title = "YMT-GROUP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<body ng-app="app" ng-controller="MyController" ng-init="GetPageFile()">
+    <div class="container mt-3">
+
+        <h2 class="text-bold mb-4 text-center">Attachments (Order online number : {{ orderNumber }})</h2>
+
+        <h3 class="text-bold mb-4">Quotation Attachments</h3>
+        
+    
+
+
+
+        <!-- ตารางแสดงไฟล์ -->
+        <div class="mb-4 p-3 border rounded">
+
+
+            <div style="display: flex; align-items: center;"
+                 ng-if="quotationNumber && quotationNumber.trim() !== ''">
+                <h4 class="text-bold" style="margin: 0; margin-right: 10px;">
+                    Quotation Number : {{ quotationNumber }}
+                </h4>
+                <button class="btn btn-info btn-sm" ng-click="downloadQuotation(quotationNumber)">
+                    Download
+                </button>
+            </div>
+
+
+            <div class="table-responsive">
+                <table class="table table-bordered mt-4">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>File Name</th>
+                            <th>Description</th>
+                           @*  <th>Path</th> *@
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="file in quoFile">
+                            <td>{{$index + 1}}</td>
+                            <td>{{file.fileName}}</td>
+                            <td>{{file.fileDescription}}</td>
+                            <td ng-show="false">{{file.filePath}}</td>
+                            <td>{{file.createdAt | date:'dd/MM/yyyy HH:mm:ss'}}</td>
+                            <td>
+                                <!-- ปุ่มดาวน์โหลด -->
+                                <button class="btn btn-info btn-sm" ng-click="downloadFile(file.filePath)">
+                                    Download
+                                </button>
+                                @*  <!-- ปุ่มลบ -->
+                                <button class="btn btn-danger btn-sm" ng-click="deleteFile(file.filePath, $index)">
+                                Delete
+                                </button> *@
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-bold mb-4">Additional Attachments</h3>
+        </div>
+        
+        <!-- Input สำหรับอัปโหลด -->
+        <div class="mb-4 p-3 border rounded bg-light">
+            <h4 class="text-bold">Upload and Download Files</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="file" id="fileInput" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" ng-model="fileDescription" placeholder="Enter file description">
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-success w-100" ng-click="UploadFileAboutOrder()">Upload</button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- ตารางแสดงไฟล์ -->
+        <div class="mb-4 p-3 border rounded">
+
+            <div class="table-responsive">
+                <table class="table table-bordered mt-4">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>File Name</th>
+                            <th>Description</th>
+                            <th>Path</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="file in files">
+                            <td>{{$index + 1}}</td>
+                            <td>{{file.fileName}}</td>
+                            <td>{{file.fileDescription}}</td>
+                            <td>{{file.filePath}}</td>
+                            <td>{{file.createdAt | date:'dd/MM/yyyy HH:mm:ss'}}</td>
+                            <td>
+                                <!-- ปุ่มดาวน์โหลด -->
+                                <button class="btn btn-info btn-sm" ng-click="downloadFile(file.filePath)">
+                                    Download
+                                </button>
+                                 <!-- ปุ่มลบ -->
+                                <button class="btn btn-danger btn-sm" ng-click="deleteFileAboutOrder(file.filePath, $index)">
+                                Delete
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4">
+
+            <button class="btn btn-primary" ng-click="backHomeOrder()">
+                Back to Home page
+            </button>
+         
+        </div>
+
+
+
+
+     </div>
+  </body>
+
+

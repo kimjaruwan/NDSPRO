@@ -8,6 +8,9 @@ using System.IO;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using static System.Net.WebRequestMethods;
+using System.ComponentModel;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Net.Mail;
 namespace NDSPRO.Controllers
 {
     public class HomeController : Controller
@@ -49,6 +52,18 @@ namespace NDSPRO.Controllers
         {
             //เริ่มต้นเป็นหน้าแรก
             return View();
+        }
+
+
+        public IActionResult ViewPage(string quotationNumber)
+        {
+            // ViewPage read only
+            var model = new QuotationViewModel
+            {
+                QuotationNumber = quotationNumber
+            };
+
+            return View(model);
         }
 
         [HttpPost]
@@ -235,8 +250,8 @@ namespace NDSPRO.Controllers
             if (MaxQuo != null && MaxQuo.Length >= 9)
             {
                 string QuoHead1 = "QUONDS";
-                string QuoHead2 = MaxQuo.Substring(6, 2); // Year, last 2 digits
-                string QuoHead3 = MaxQuo.Substring(8, 2); // Month
+                string QuoHead2 = DateTime.Now.ToString("yy"); // Year
+                string QuoHead3 = DateTime.Now.ToString("MM");  // Month// Month
                 int nextSequence = int.Parse(MaxQuo.Substring(MaxQuo.Length - 4)) + 1; // Extract last 3 characters and increment by 1
                 NewQuotationNumber = QuoHead1 + QuoHead2 + QuoHead3 + nextSequence.ToString("D4");
             }
@@ -251,11 +266,8 @@ namespace NDSPRO.Controllers
 
             dataQuotation.QuotationNumber = NewQuotationNumber;
 
-
-
-
-
             _context.YmtgOrders.Add(dataQuotation);
+
             _context.SaveChanges();
             return Ok(dataQuotation);
         }
@@ -368,7 +380,7 @@ namespace NDSPRO.Controllers
                 return BadRequest("StyleCode is required.");
             }
             var skuCodes = _context.MasterStyles
-                .Where(z => z.StyleCode == style.StyleCode)
+                .Where(z => z.Description == style.StyleCode)
                 .GroupBy(p => p.Style) // Column ที่เรา Select
                 .Select(g => g.Key)
                 .FirstOrDefault();
@@ -385,24 +397,29 @@ namespace NDSPRO.Controllers
         public ActionResult GetdataQuo()
         {
             
-            var dataquo = _context.YmtgOrders.Where(a => a.QuoCancel == 0).ToList();
- 
+            var dataquo = _context.YmtgOrders
+            .Where(a => a.QuoCancel == 0) 
+            .OrderByDescending(a => a.Id) // เรียงลำดับ Id จากมากไปน้อย
+            .ToList(); 
+
             return Ok(dataquo);
         }
         // For front end
         [HttpGet]
         public JsonResult GetdataQuos()
         {
-            var dataquo = _context.YmtgOrders.Select(e => new
-            {
-                e.Id,
-                e.QuotationNumber,
-                e.QuoType,
-                e.CustomerName,
-                e.QuoLastname,
-                e.CreateDate
-
-            }).ToList();
+            var dataquo = _context.YmtgOrders
+            .OrderByDescending(e => e.Id) // เรียงลำดับ Id จากมากไปน้อย
+            .Select(e => new
+         {
+             e.Id,
+             e.QuotationNumber,
+             e.QuoType,
+             e.CustomerName,
+             e.QuoLastname,
+             e.CreateDate
+         })
+         .ToList();
 
             return Json(new { data = dataquo });
 
@@ -452,7 +469,6 @@ namespace NDSPRO.Controllers
 
             // อัปเดตข้อมูลใน Order
             existingOrder.CustomerName = updateModel.CustomerName;
-            existingOrder.OrderDate = updateModel.OrderDate;
             existingOrder.ShipDate = updateModel.ShipDate; // Map
             existingOrder.TotalQty = updateModel.TotalQty;
             existingOrder.TotalPrice = updateModel.TotalPrice;
@@ -474,9 +490,100 @@ namespace NDSPRO.Controllers
             existingOrder.QuoStatus = updateModel.QuoStatus; // Map
 
 
+
+            var genNewOrdernumber = "";
+
+            var MaxQuo = _context.OrderModel
+            .Where(o => o.OrderNumber.Length > 4 && o.OrderNumber.Substring(3, 1) == "M") // ตรวจสอบว่าตัวที่ 4 เป็น 'M'
+            .OrderByDescending(o => o.OrderNumber) // เรียงลำดับจากมากไปน้อย
+            .Select(o => o.OrderNumber) // เลือกเฉพาะ Remark
+            .FirstOrDefault(); // ดึงค่าที่มากที่สุด
+
+
+            if (MaxQuo != null && MaxQuo.Length >= 9)
+            {
+                string QuoHead1 = "NDSM";
+                string QuoHead2 = DateTime.Now.ToString("yy"); // Year
+                string QuoHead3 = DateTime.Now.ToString("MM");  // Month
+                int nextSequence = int.Parse(MaxQuo.Substring(MaxQuo.Length - 4)) + 1; // Extract last 3 characters and increment by 1
+                genNewOrdernumber = QuoHead1 + QuoHead2 + QuoHead3 + nextSequence.ToString("D4");
+            }
+            else
+            {
+                // กรณีไม่มีข้อมูลก่อนหน้านี้ กำหนดค่าเริ่มต้น
+                string QuoHead1 = "NDSM";
+                string QuoHead2 = DateTime.Now.ToString("yy"); // Year, last 2 digits
+                string QuoHead3 = DateTime.Now.ToString("MM"); // Month
+                genNewOrdernumber = QuoHead1 + QuoHead2 + QuoHead3 + "0001";
+            }
+
+            
+
+
+
+
+            // gen Order number
+            if (existingOrder.QuoStatus == 1)
+            {
+                existingOrder.OrderNumber = genNewOrdernumber;
+                existingOrder.OrderDate = updateModel.OrderDate;
+                //existingOrder.Remark = genNewOrdernumber;
+            }
+
             //TaxID / Email
             // บันทึกการเปลี่ยนแปลง
             _context.SaveChanges();
+
+            var custName = "";
+            var custAddress = existingOrder.CustomerAddress + " " + existingOrder.QuoProvince +
+                " " + existingOrder.QuoDistricts + " " +existingOrder.QuoSubDistricts + " " + 
+                existingOrder.QuoZipCode;
+
+            if (string.IsNullOrEmpty(existingOrder.CustomerName) && !string.IsNullOrEmpty(existingOrder.QuoCompanyName))
+            {
+                custName = existingOrder.QuoCompanyName;
+            }
+            else if (string.IsNullOrEmpty(existingOrder.QuoCompanyName) && !string.IsNullOrEmpty(existingOrder.CustomerName)) 
+            {
+                custName = existingOrder.CustomerName + " " + existingOrder.QuoLastname;
+
+            }
+
+
+            if (existingOrder.QuoStatus == 1)
+            {
+
+                var newOrderModel = new OrderModel
+                {
+                   
+
+                    OrderNumber = genNewOrdernumber,
+                    OrderDate = existingOrder.OrderDate,
+                    OrderStatus = "processing", 
+                    ShipDate = existingOrder.ShipDate,
+                    TotalQty = existingOrder.TotalQty,
+                    TotalPrice = existingOrder.TotalPrice,
+                    CustomerName = custName,
+                    CustomerEmail = existingOrder.CustomerEmail,
+                    CustomerAddress = custAddress,
+                    CustomerAddressTax = existingOrder.QuoTaxID, // ใช้ TaxID เป็น CustomerAddressTax
+                    CustomerPhone = existingOrder.CustomerPhone,
+                    Remark = updateModel.QuotationNumber,
+                    CreateBy = "ADMIN", // ระบุผู้ที่ทำการเพิ่มข้อมูล
+                    CreateDate = DateTime.Now // วันที่สร้างใหม่
+
+
+                };
+
+                // เพิ่มข้อมูลลงใน OrderModel
+                _context.OrderModel.Add(newOrderModel);
+
+                // บันทึกการเปลี่ยนแปลงลงในฐานข้อมูล
+                _context.SaveChanges();
+
+            }
+           
+
 
 
             // ลบข้อมูลสินค้าเก่าทั้งหมดสำหรับ QuotationNumber
@@ -529,6 +636,55 @@ namespace NDSPRO.Controllers
                 }
 
                 _context.SaveChanges();
+
+                // Insert into product table
+
+                if (existingOrder.QuoStatus == 1)
+                {
+
+
+                    foreach (var entry in updateModel.Entries)
+                    {
+                        var newProductm = new ProductModel
+                        {
+                            OrderNumber = genNewOrdernumber,
+                            ProductName = entry.ProductName,
+                            Qty = entry.Qty,
+                            SKUCode = "",
+                            Size = entry.Size,
+                            Color = entry.Color,
+                            Price = entry.Price,
+                            PrintingType = 0,
+                            CreateBy = "ADMIN",
+                            CreateDate = DateTime.Now
+                               //SKUCodeFull = entry.SKUCodeFull,
+                        };
+
+                        // ตัดสามตัวหลังออกจาก SKUCode
+                        if (!string.IsNullOrEmpty(entry.SKUCodeFull) && entry.SKUCodeFull.Length > 3)
+                        {
+                            newProductm.SKUCode = entry.SKUCodeFull.Substring(0, entry.SKUCodeFull.Length - 3);
+                        }
+
+
+                        // ตรวจสอบและกำหนดค่า PrintingType
+                        if (!string.IsNullOrEmpty(entry.Sku) && entry.Sku.Length > 3)
+                        {
+                            string lastThreeChars = entry.Sku.Substring(entry.Sku.Length - 3);
+                            if (int.TryParse(lastThreeChars, out int printingType))
+                            {
+                                newProductm.PrintingType = printingType;
+                            }
+                        }
+
+                        _context.ProductModel.Add(newProductm);
+                    }
+
+                    _context.SaveChanges();
+
+
+
+                }
             }
 
             return Ok("Quotation and products updated successfully.");
@@ -780,6 +936,241 @@ namespace NDSPRO.Controllers
             return Ok(new { quoNumber.QuotationNumber });
 
         }
+
+
+        [HttpGet]
+        public JsonResult GetOrderInfos()
+        {
+            var orderData = _context.OrderModel
+                .Select(o => new
+                {
+                    o.OrderNumber,
+                    o.OrderDate,
+                    o.ShipDate,
+                    o.TotalQty,
+                    o.OrderStatus,
+                    o.CustomerName
+                })
+                .OrderByDescending(o => o.OrderNumber)
+                .ToList();
+            //return Ok(orderData);
+            return Json(new { data = orderData });
+        }
+
+        public IActionResult ViewOrder()
+        {
+            //หน้าดูรายละเอียด Order
+            return View();
+        }
+
+        public IActionResult ViewAttachments()
+        {
+            // หน้า แนบไฟล์
+            return View();
+        }
+
+        [HttpGet]
+        public JsonResult GetOrderDetails(string orderNumber)
+        {
+            var order = _context.OrderModel
+                .Where(o => o.OrderNumber == orderNumber)
+                .Select(o => new
+                {
+                    o.OrderNumber,
+                    OrderDate = o.OrderDate.ToString("dd/MM/yyyy"), // จัดรูปแบบวันที่
+                    ShipDate = o.ShipDate.HasValue ? o.ShipDate.Value.ToString("dd/MM/yyyy") : null, // เช็ค null ก่อนจัดรูปแบบ
+                    o.TotalQty,
+                    o.OrderStatus
+                })
+                .FirstOrDefault();
+
+            return Json(order);
+        }
+
+        [HttpGet]
+        public JsonResult GetProductOrders(string orderNumber)
+        {
+            var productOrder = _context.ProductModel
+                .Where(o => o.OrderNumber == orderNumber)
+                .Select(o => new
+                {
+
+                    o.OrderNumber,
+                    o.ProductName,
+                    o.Size,
+                    o.Color,
+                    o.Qty
+                   
+                   
+                })
+                .ToList();
+
+            return Json(productOrder);
+        }
+
+       //Get Quotation file by order num
+        [HttpGet]
+        public IActionResult GetDataQuoFileTables(string orderNumber)
+
+        {
+            if (string.IsNullOrEmpty(orderNumber))
+            {
+                return BadRequest("Order number is required.");
+            }
+
+            //หา file Quotation
+
+            var QuoNum = _context.YmtgOrders.Where(z => z.OrderNumber == orderNumber).FirstOrDefault();
+
+            var fileQuos = _context.QuotationFiles
+                .Where(f => f.QuotationNumber == QuoNum.QuotationNumber)
+                .Select(f => new
+                {
+                    f.QuotationNumber,
+                    f.Id,
+                    f.FileName,
+                    f.FilePath,
+                    f.FileDescription,
+                    CreatedAt = f.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")
+                })
+                .ToList();
+
+            return Ok(fileQuos);
+
+        }
+
+
+
+        [HttpPost]
+        public IActionResult UploadFileAboutOrders(IFormFile file, [FromForm] string fileDescription, [FromForm] string orderNumber)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Invalid file.");
+            }
+
+            if (string.IsNullOrEmpty(orderNumber))
+            {
+                return BadRequest("Order number is required.");
+            }
+
+            if (string.IsNullOrEmpty(fileDescription))
+            {
+                fileDescription = "";
+            }
+
+            // สร้างโฟลเดอร์ Otherfile และโฟลเดอร์สำหรับ Order Number
+            var otherfileFolderPath = Path.Combine(_uploadPath, "Otherfile", orderNumber);
+            if (!Directory.Exists(otherfileFolderPath))
+            {
+                Directory.CreateDirectory(otherfileFolderPath);
+            }
+
+            // จัดการกรณีชื่อไฟล์ซ้ำ
+            var fileName = Path.GetFileName(file.FileName);
+            var filePath = Path.Combine(otherfileFolderPath, fileName);
+
+            int counter = 1;
+            while (System.IO.File.Exists(filePath))
+            {
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                var fileExtension = Path.GetExtension(fileName);
+                fileName = $"{fileNameWithoutExtension}_{counter++}{fileExtension}";
+                filePath = Path.Combine(otherfileFolderPath, fileName);
+            }
+
+            // บันทึกไฟล์ลงในโฟลเดอร์
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                file.CopyTo(stream);
+            }
+            //"dd/MM/yyyy HH:mm:ss"
+            // บันทึกข้อมูลไฟล์ลงฐานข้อมูล
+            var newFile = new AttachmentsModel
+            {
+                OrderNumber = orderNumber,
+                FileName = fileName,
+                FilePath = Path.Combine("Uploads", "Otherfile", orderNumber, fileName), // เก็บ Path แบบ Relative
+                FileDescription = fileDescription,
+                CreatedAt = DateTime.Now,
+                AddFileBy = "ADMIN"
+            };
+            _context.AttachmentsModel.Add(newFile);
+            _context.SaveChanges();
+
+            return Json(new { sendFile = newFile });
+
+           
+        }
+
+        //GetDataOtherFileTable
+
+
+        [HttpGet]
+        public IActionResult GetDataOtherFileTable(string orderNumber)
+
+        {
+            if (string.IsNullOrEmpty(orderNumber))
+            {
+                return BadRequest("Order number is required.");
+            }
+
+            //หา file Quotation
+
+            
+
+            var fileOther = _context.AttachmentsModel
+                .Where(f => f.OrderNumber == orderNumber)
+                .Select(f => new
+                {
+                 
+                    f.Id,
+                    f.FileName,
+                    f.FilePath,
+                    f.FileDescription,
+                    CreatedAt = f.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")
+                })
+                .ToList();
+
+            return Ok(fileOther);
+
+        }
+
+        //DeleteFileAboutOrders
+
+        [HttpDelete]
+        public IActionResult DeleteFileAboutOrders(string filePath, string orderNumber)
+        {
+            if (string.IsNullOrEmpty(filePath) || string.IsNullOrEmpty(orderNumber))
+            {
+                return BadRequest("File path and Quotation number are required.");
+            }
+
+            // ลบคำว่า "Uploads" ออกจาก filePath ถ้ามี
+            if (filePath.StartsWith("Uploads", StringComparison.OrdinalIgnoreCase))
+            {
+                filePath = filePath.Substring("Uploads".Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            }
+
+            var absolutePath = Path.Combine(_uploadPath, filePath);
+            if (System.IO.File.Exists(absolutePath))
+            {
+                System.IO.File.Delete(absolutePath);
+            }
+
+            var formattedFilePath = "Uploads\\" + filePath;
+            // ลบข้อมูลจากฐานข้อมูล
+            var fileRecord = _context.AttachmentsModel
+                .FirstOrDefault(f => f.FilePath == formattedFilePath && f.OrderNumber == orderNumber);
+            if (fileRecord != null)
+            {
+                _context.AttachmentsModel.Remove(fileRecord);
+                _context.SaveChanges();
+            }
+
+            return Ok("File deleted successfully.");
+        }
+
 
 
     }

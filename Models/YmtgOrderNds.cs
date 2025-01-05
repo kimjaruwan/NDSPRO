@@ -10,11 +10,11 @@ namespace NDSPRO.Models
         public int Id { get; set; } = 0;                        // กำหนดค่าเริ่มต้นเป็น 0
         public string QuotationNumber { get; set; } = "";       // หมายเลขใบเสนอราคา
         public string OrderNumber { get; set; } = "";           // หมายเลขคำสั่งซื้อ
-        public DateTime? OrderDate { get; set; } = DateTime.Now.Date;         // วันที่สั่งซื้อ
+        public DateTime OrderDate { get; set; } = DateTime.Now.Date;         // วันที่สั่งซื้อ
         public string OrderStatus { get; set; } = "";           // สถานะคำสั่งซื้อ
         public DateTime? ShipDate { get; set; } = DateTime.Now.Date;                // วันที่จัดส่ง
         public int TotalQty { get; set; } = 0;                  // จำนวนรวม กำหนดค่าเริ่มต้นเป็น 0
-        public decimal TotalPrice { get; set; } = 0m;           // ราคาทั้งหมด กำหนดค่าเริ่มต้นเป็น 0
+        public decimal TotalPrice { get; set; } = 0;           // ราคาทั้งหมด กำหนดค่าเริ่มต้นเป็น 0
         public string CustomerName { get; set; } = "";          // ชื่อลูกค้า
         public string CustomerEmail { get; set; } = "";         // อีเมลลูกค้า
         public string CustomerAddress { get; set; } = "";       // ที่อยู่ลูกค้า

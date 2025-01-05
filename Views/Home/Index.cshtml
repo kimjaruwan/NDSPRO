@@ -65,7 +65,7 @@
             <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
             <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 
-
+          
 
             <script>
                 $(document).ready(function () {
@@ -96,8 +96,13 @@
                             {
                                 data: null,
                                 className: 'text-center',
-                                render: function (data) {
-                                    return `<button class="btn btn-primary edit-button" data-quotation-number="${data.quotationNumber}">Edit</button>`;
+                                render: function (data, type, row) {
+                                    // return `<button class="btn btn-primary edit-button" data-quotation-number="${data.quotationNumber}">Edit</button>`;
+                                    if (row.quoStatus === 0 ) {
+                                        return '<button class="btn btn-primary edit-button" data-quotation-number="' + data.quotationNumber + '">Edit</button>';
+                                    } else {
+                                        return ''; // ถ้าไม่ใช่ 0 ให้คืนค่าเป็นค่าว่าง
+                                    }
                                 }
                             },
                             {
@@ -114,7 +119,8 @@
                                     return `<button class="btn btn-info view-button" data-quotation-number="${data.quotationNumber}">View</button>`;
                                 }
                             }
-                        ]
+                        ],
+                        order: [[0, 'desc']] // เรียงลำดับ quotationNumber (คอลัมน์ที่ 0) จากมากไปน้อย
                      
                     });
 
@@ -142,6 +148,11 @@
 
                 function PrintPDF(id) {
                     location.href = '/PDF/PrintPDF?quotationNumber=' + id;
+
+                }
+
+                function viewQuotation(id) {
+                    location.href = '/Home/ViewPage?quotationNumber=' + id;
 
                 }
 

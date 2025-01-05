@@ -2,3 +2,160 @@
     ViewBag.Title = "YMT-GROUP";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<div ng-app="app" ng-controller="MyController" ng-init="GetOrderInfo()">
+    @*     <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <!-- SweetAlert2 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> *@
+
+    <div class="text-center mb-3  p-3">
+
+        <h1 class="page-title">Order Informations</h1>
+
+    </div>
+    <div class="mb-1 col-md-12 text-end">
+       @*  <button class="btn btn-secondary" type="button" ng-click="CreateQuo()"> New </button> *@
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <table id="orderInfoTable" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Order Number</th>
+                                <th class="text-center">Order Date</th>
+                                <th class="text-center">Ship Date</th>
+                                <th class="text-center">Qty</th>  @* จำนวนออร์เดอร์ *@
+                                <th class="text-center">Order Status</th>
+                                <th class="text-center">View</th> 
+                                <th class="text-center">Attachments</th>
+                               
+                            </tr>
+                        </thead>
+                        <tbody>
+                           @*  <tr ng-repeat="x in dataOrders">
+                                <td class="text-center">{{ x.orderNumber }}</td>
+                                <td class="text-center">{{ x.orderDate  | date: 'dd/MM/yyyy' }}</td>
+                                <td class="text-center">{{ x.shipDate  | date: 'dd/MM/yyyy' }}</td>
+                                <td class="text-center">{{ x.totalQty }}</td>
+                                <td class="text-center">{{ x.orderStatus }}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-info" ng-click="ViewOrderInfo(x.orderNumber)">View</button>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-success" ng-click="Files(x.orderNumber)">Files</button>
+                                </td>
+                            </tr> *@
+                        </tbody>
+                    </table>
+
+                    <!-- Modal Popup -->
+                    <div class="modal fade" id="OrderDetails" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog  modal-full-width">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Order Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="col-form-label text-bold">Order Number</label>
+                                            <input type="text" class="form-control" ng-model="modalData.orderNumber" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="col-form-label text-bold">Order Date</label>
+                                            <input type="text" class="form-control" ng-model="modalData.orderDate" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="col-form-label text-bold">Ship Date</label>
+                                            <input type="text" class="form-control" ng-model="modalData.shipDate" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="col-form-label text-bold">Total Quantity</label>
+                                            <input type="text" class="form-control" ng-model="modalData.totalQty" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label class="col-form-label text-bold">Order Status</label>
+                                            <input type="text" class="form-control" ng-model="modalData.orderStatus" readonly>
+                                        </div>
+                                    </div>
+                             
+                                    @* table *@
+                                    <div class="col-md-12">
+                                        <label class="col-form-label text-bold">Product list</label>
+                                       
+                                    </div>
+
+
+                                    <div class="card">
+                                        <div class="card-body">
+                    
+                                        <div class="table-responsive">
+                                            <table class="table table-striped dt-responsive nowrap w-100">
+                                                <thead>
+                                                    <tr>
+
+                                                        <th>Style name</th>
+                                                        <th>Size</th>
+                                                        <th>Color</th>
+                                                        <th>Qty</th>
+
+
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody>
+                                                    <tr ng-repeat="product in productOrders">
+                                                        <td>{{product.productName}}</td>
+                                                        <td>{{product.size}}</td>
+                                                        <td>{{product.color}}</td>
+                                                        <td>{{product.qty}}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+
+
+                                        </div>
+
+                                    </div>
+                                 
+
+
+                                    @* table *@
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Popup -->
+
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+        @section Scripts {
+            <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+            <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+            <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+            <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+            <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+
+ }
+    </div>
+</div>
