@@ -11,6 +11,7 @@ using static System.Net.WebRequestMethods;
 using System.ComponentModel;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Net.Mail;
+using Microsoft.IdentityModel.Tokens;
 namespace NDSPRO.Controllers
 {
     public class HomeController : Controller
@@ -817,7 +818,7 @@ namespace NDSPRO.Controllers
             _context.SaveChanges();
 
             //return Ok(newFile);
-            return Json(new { data = newFile });
+            return Json(new { sendFileQuo = newFile });
         }
 
         [HttpGet]
@@ -1021,9 +1022,23 @@ namespace NDSPRO.Controllers
             //кр file Quotation
 
             var QuoNum = _context.YmtgOrders.Where(z => z.OrderNumber == orderNumber).FirstOrDefault();
+            string QuoNumStr;
+            if (QuoNum == null)
+            {
+                QuoNumStr = "";
 
-            var fileQuos = _context.QuotationFiles
-                .Where(f => f.QuotationNumber == QuoNum.QuotationNumber)
+            }
+            else 
+            {
+                QuoNumStr = QuoNum.QuotationNumber.ToString();
+            }
+
+           var fileQuos = new List<object>();
+
+            if (!string.IsNullOrEmpty(QuoNumStr)) { 
+
+       fileQuos = _context.QuotationFiles
+                .Where(f => f.QuotationNumber == QuoNumStr)
                 .Select(f => new
                 {
                     f.QuotationNumber,
@@ -1033,11 +1048,22 @@ namespace NDSPRO.Controllers
                     f.FileDescription,
                     CreatedAt = f.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")
                 })
-                .ToList();
+                 .ToList<object>();
 
+            }
+
+
+            // Return {} if no files exist
+            if (!fileQuos.Any())
+            {
+                return Ok(new { });
+            }
+
+            // Return fileQuos directly if files exist
             return Ok(fileQuos);
 
         }
+
 
 
 

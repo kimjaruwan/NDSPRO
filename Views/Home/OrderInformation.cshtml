@@ -21,6 +21,8 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
+
+                    <div class="table-responsive">
                     <table id="orderInfoTable" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
                         <thead>
                             <tr>
@@ -35,22 +37,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                           @*  <tr ng-repeat="x in dataOrders">
-                                <td class="text-center">{{ x.orderNumber }}</td>
-                                <td class="text-center">{{ x.orderDate  | date: 'dd/MM/yyyy' }}</td>
-                                <td class="text-center">{{ x.shipDate  | date: 'dd/MM/yyyy' }}</td>
-                                <td class="text-center">{{ x.totalQty }}</td>
-                                <td class="text-center">{{ x.orderStatus }}</td>
-                                <td class="text-center">
-                                    <button class="btn btn-info" ng-click="ViewOrderInfo(x.orderNumber)">View</button>
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-success" ng-click="Files(x.orderNumber)">Files</button>
-                                </td>
-                            </tr> *@
+                          
                         </tbody>
                     </table>
 
+                    </div>
                     <!-- Modal Popup -->
                     <div class="modal fade" id="OrderDetails" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog  modal-full-width">

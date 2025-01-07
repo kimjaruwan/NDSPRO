@@ -21,6 +21,8 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
+
+                    <div class="table-responsive">
                     <table id="quotationTable" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
                         <thead>
                             <tr>
@@ -36,25 +38,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="x in dataquo">
-                                <td class="text-center">{{x.quotationNumber}}</td>
-                                <td class="text-center">{{x.quoType}}</td>
-                                <td class="text-center">{{x.customerName}}</td>
-                                <td class="text-center">{{x.quoLastname}}</td>
-                                <td class="text-center">{{x.createDate  | date: 'dd/MM/yyyy'}}</td>
-                                <td class="text-center">{{x.quoStatus}}</td>
-                                <td class="text-center">
-                                    <button class="btn btn-primary" ng-click="editQuotation(x.quotationNumber)">Edit</button>
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-success" ng-click="PrintPDF(x.quotationNumber)">PDF</button>
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-info" ng-click="viewQuotation(x.quotationNumber)">View</button>
-                                </td>
-                            </tr>
+                           
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -67,101 +54,7 @@
 
           
 
-            <script>
-                $(document).ready(function () {
-                    $('#quotationTable').DataTable({
-                        ajax: {
-                            url: '/Home/GetQuotations',
-                            dataSrc: 'data'
-                        },
-                        columns: [
-                            { data: 'quotationNumber', className: 'text-center' },
-                            { data: 'quoType', className: 'text-center' },
-                            { data: 'customerName', className: 'text-center' },
-                            { data: 'quoLastname', className: 'text-center' },
-                            {
-                                data: 'createDate',
-                                className: 'text-center',
-                                render: function (data) {
-                                    return new Date(data).toLocaleDateString('th-TH');
-                                }
-                            },
-                            {
-                                data: 'quoStatus',
-                                className: 'text-center',
-                                render: function (data) {
-                                    return data === 1 ? 'Confirmed' : ''; 
-                                }
-                            },
-                            {
-                                data: null,
-                                className: 'text-center',
-                                render: function (data, type, row) {
-                                    // return `<button class="btn btn-primary edit-button" data-quotation-number="${data.quotationNumber}">Edit</button>`;
-                                    if (row.quoStatus === 0 ) {
-                                        return '<button class="btn btn-primary edit-button" data-quotation-number="' + data.quotationNumber + '">Edit</button>';
-                                    } else {
-                                        return ''; // ถ้าไม่ใช่ 0 ให้คืนค่าเป็นค่าว่าง
-                                    }
-                                }
-                            },
-                            {
-                                data: null,
-                                className: 'text-center',
-                                render: function (data) {
-                                    return `<button class="btn btn-success pdf-button" data-quotation-number="${data.quotationNumber}">PDF</button>`;
-                                }
-                            },
-                            {
-                                data: null,
-                                className: 'text-center',
-                                render: function (data) {
-                                    return `<button class="btn btn-info view-button" data-quotation-number="${data.quotationNumber}">View</button>`;
-                                }
-                            }
-                        ],
-                        order: [[0, 'desc']] // เรียงลำดับ quotationNumber (คอลัมน์ที่ 0) จากมากไปน้อย
-                     
-                    });
-
-                    $('#quotationTable').on('click', '.edit-button', function () {
-                        const id = $(this).data('quotationNumber');
-                        editQuotation(id);
-
-
-                    });
-                    $('#quotationTable').on('click', '.pdf-button', function () {
-                        const id = $(this).data('quotationNumber');
-                        PrintPDF(id);
-                    });
-                    $('#quotationTable').on('click', '.view-button', function () {
-                        const id = $(this).data('quotationNumber');
-                        viewQuotation(id);
-                    });
-
-                });
-
-                // Edit Quotation Function
-                function editQuotation(id) {
-                    location.href = '/Home/EditQuo?quotationNumber=' + id;
-                }
-
-                function PrintPDF(id) {
-                    location.href = '/PDF/PrintPDF?quotationNumber=' + id;
-
-                }
-
-                function viewQuotation(id) {
-                    location.href = '/Home/ViewPage?quotationNumber=' + id;
-
-                }
-
-                // View Quotation Function
-                // function viewQuotation(id) {
-                 
-                  
-                // }
-            </script>
+       
         }
     </div>
 </div>

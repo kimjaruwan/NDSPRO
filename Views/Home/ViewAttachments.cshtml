@@ -12,9 +12,6 @@
         <h3 class="text-bold mb-4">Quotation Attachments</h3>
         
     
-
-
-
         <!-- ตารางแสดงไฟล์ -->
         <div class="mb-4 p-3 border rounded">
 
@@ -30,7 +27,7 @@
             </div>
 
 
-            <div class="table-responsive">
+            <div class="table-responsive" >
                 <table class="table table-bordered mt-4">
                     <thead>
                         <tr>
@@ -54,15 +51,15 @@
                                 <button class="btn btn-info btn-sm" ng-click="downloadFile(file.filePath)">
                                     Download
                                 </button>
-                                @*  <!-- ปุ่มลบ -->
-                                <button class="btn btn-danger btn-sm" ng-click="deleteFile(file.filePath, $index)">
-                                Delete
-                                </button> *@
+                           
                             </td>
                         </tr>
+
+
                     </tbody>
                 </table>
             </div>
+
         </div>
 
         <div>
@@ -97,7 +94,7 @@
                             <th>No.</th>
                             <th>File Name</th>
                             <th>Description</th>
-                            <th>Path</th>
+                           @*  <th>Path</th> *@
                             <th>Created At</th>
                             <th>Actions</th>
                         </tr>
@@ -107,7 +104,7 @@
                             <td>{{$index + 1}}</td>
                             <td>{{file.fileName}}</td>
                             <td>{{file.fileDescription}}</td>
-                            <td>{{file.filePath}}</td>
+                            <td ng-show="false">{{file.filePath}}</td>
                             <td>{{file.createdAt | date:'dd/MM/yyyy HH:mm:ss'}}</td>
                             <td>
                                 <!-- ปุ่มดาวน์โหลด -->

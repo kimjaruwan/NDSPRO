@@ -357,18 +357,18 @@
                         <th>No.</th>
                         <th>File Name</th>
                         <th>Description</th>
-                        <th>Path</th>
+                        @* <th>Path</th> *@
                         <th>Created At</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="file in files">
-                        <td>{{$index + 1}}</td>
-                        <td>{{file.fileName}}</td>
-                        <td>{{file.fileDescription}}</td>
-                        <td>{{file.filePath}}</td>
-                         <td>{{file.createdAt | 'dd/MM/yyyy HH:mm:ss'}}</td>
+                        <tr ng-repeat="file in files">
+                            <td>{{$index + 1}}</td>
+                            <td>{{file.fileName}}</td>
+                            <td>{{file.fileDescription}}</td>
+                            <td ng-show="false">{{file.filePath}}</td>
+                            <td>{{file.createdAt | date:'dd/MM/yyyy HH:mm:ss'}}</td>
                         <td>
                             <!-- ปุ่มดาวน์โหลด -->
                             <button class="btn btn-info btn-sm" ng-click="downloadFile(file.filePath)">

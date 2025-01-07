@@ -65,10 +65,12 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         .then(function (response) {
             $scope.userData = response.data; // เก็บข้อมูลที่ดึงมาในตัวแปร 
 
-            console.log(response.data);
+            
         });
 
     $scope.files = [];
+   /* $scope.filesq = [];*/
+
     $scope.CreateQuo = function () {
         // Redirect to CreateQuo View
         window.location.href = '/Home/CreateQuo';
@@ -79,7 +81,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         $http.get('/Home/GetSku')
             .then(function (response) {
                 $scope.ListDropSku = response.data;
-                console.log("Sku Number:", response.data);
+               
             });
         //$scope.getUserData();
         //$scope.GetOrderNos();
@@ -93,7 +95,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         })
             .then(function (response) {
                 $scope.skuCode = response.data;
-                console.log("Sku Codes:", response.data);
+              
             })
             .catch(function (error) {
                 console.error("Error fetching SKU Codes:", error);
@@ -107,14 +109,14 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         $http.get('/Home/GetColors')
             .then(function (response) {
                 $scope.ListColors = response.data;
-                console.log("Colors:", response.data);
+                
             });
     };
     $scope.GetSizes = function () {
         $http.get('/Home/GetSizes')
             .then(function (response) {
                 $scope.ListSizes = response.data;
-                console.log("Colors:", response.data);
+               
             });
     };
 
@@ -124,7 +126,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         $http.get('/Home/GetOrderType')
             .then(function (response) {
                 $scope.ListTypeSell = response.data;
-                console.log("OrderTypes:", response.data);
+                
             });
 
     }
@@ -169,7 +171,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
             $scope.CalculateTotalSum()
             $scope.CalculateQty(); // คำนวณยอดรวมของ Quantity
         } else {
-            alert('555');
+            alert('');
         }
     };
 
@@ -291,10 +293,9 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
 
             $http.post('/Home/SaveToProductTable', updatedEntries)
                 .then(function (response) {
-                    console.log(response.data);
+                    
                     var QuoNumber = response.data[0].quotationNumber;
-                    console.log(QuoNumber);
-
+                    
                     // Update Quotation station-----*
 
                     Swal.fire({
@@ -324,7 +325,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
 
     $scope.PrintPDF = function (NumberQuo) {
         // รับค่า QuotationNumber จากข้อมูลที่กรอกโดยผู้ใช้
-        console.log(NumberQuo);
+       
         var quotationNumber = NumberQuo;
         /* var quotationNumber = $scope.QuoData.QuoNumber;*/
 
@@ -343,12 +344,12 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
 
 
 
-    $scope.ValidateTaxID = function () {
-        //$scope.QuoData.CustomerTaxID = $scope.QuoData.CustomerTaxID.replace(/\D/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลข
-        //if ($scope.QuoData.CustomerTaxID.length > 13) {
-        //    $scope.QuoData.CustomerTaxID = $scope.QuoData.CustomerTaxID.slice(0, 13); // จำกัดความยาวไม่เกิน 13 หลัก
-        //}
-    };
+    //$scope.ValidateTaxID = function () {
+    //    //$scope.QuoData.CustomerTaxID = $scope.QuoData.CustomerTaxID.replace(/\D/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลข
+    //    //if ($scope.QuoData.CustomerTaxID.length > 13) {
+    //    //    $scope.QuoData.CustomerTaxID = $scope.QuoData.CustomerTaxID.slice(0, 13); // จำกัดความยาวไม่เกิน 13 หลัก
+    //    //}
+    //};
 
 
     $scope.GetPageLoad = function () {
@@ -387,7 +388,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
 
     $scope.GetListSub = function (SelectedDistricts, SelectedProvinces) {
         //Get SubDist Where จังหวัด, อำเภอ
-        console.log(SelectedDistricts, SelectedProvinces);
+     
         // ส่งข้อมูลไปยัง Backend
         $http.post('/Home/GetListSubs',
             {
@@ -395,9 +396,9 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
                 Provinces: SelectedProvinces
             })
             .then(function (response) {
-                console.log("Response จาก Backend:", response);
+            
                 $scope.ListSub = response.data; // เก็บผลลัพธ์จาก Backend
-                console.log("ListDistricts:", $scope.ListSub);
+             
             })
             .catch(function (error) {
                 console.error("Error:", error);
@@ -406,7 +407,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
 
     $scope.GetListZipcode = function (SelectedSub, SelectedDistricts) {
 
-        console.log(SelectedSub, SelectedDistricts);
+       
         // ส่งข้อมูลไปยัง Backend
         $http.post('/Home/GetListZipcode',
             {
@@ -417,7 +418,6 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
             .then(function (response) {
                 $scope.SZipcode = response.data; // เก็บผลลัพธ์จาก Backend
 
-                console.log($scope.SZipcode);
             })
             .catch(function (error) {
                 console.error("Error:", error);
@@ -430,8 +430,10 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         $http.post('/Home/GetdataQuo')
             .then(function (response) {
                 $scope.ListQuo = response.data; // เก็บผลลัพธ์จาก Backend
-                console.log($scope.ListQuo);
+                
 
+
+                $scope.initializeDataTable(); // เรียกใช้ DataTable หลังจากข้อมูลพร้อม
             })
             .catch(function (error) {
                 console.error("Error:", error);
@@ -445,23 +447,6 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         $window.location.href = '/Home/EditQuo?quotationNumber=' + quotationNumber;
     }
 
-    //$scope.GetdataQuoForEdit = function (searchQuo) {
-    //    console.log(searchQuo);
-
-    //    // ส่งข้อมูลไปยัง Backend
-    //    $http.post('/Home/GetdataQuoForEdit', {
-    //        QuotationNumber: searchQuo
-    //    })
-    //        .then(function (response) {
-    //            $scope.ListDistricts = response.data;
-    //        })
-    //        .catch(function (error) {
-    //            console.error("Error:", error);
-    //        });
-
-
-
-    //}
 
     function formatDateToDDMMYYYY(date) {
         const day = String(date.getDate()).padStart(2, '0'); // เติม 0 ด้านหน้าให้เป็น 2 หลัก
@@ -472,7 +457,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
 
 
     $scope.GetdataQuoForEdit = function (searchQuo) {
-        console.log(searchQuo);
+        
         $scope.GetPageLoad();
 
         $http.post('/Home/GetdataQuoForEdit', {
@@ -611,7 +596,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         //$scope.formattedDate = $filter('date')($scope.selectedShipDate, 'dd/MM/yyyy HH:mm:ss');
 
 
-        console.log($scope.formattedDate);
+       
         //// Prepare data for update
         //console.log("ShipDate " + shipDate);
         //console.log("Quo status " + quoStatus);
@@ -646,8 +631,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
                 Price: entry.PricePerUnit
             }))
         };
-        console.log("updateData" + updateData.QuoStatus);
-        console.log("updateData" + updateData.ShipDate);
+    
 
         // Send update request
         $http.post('/Home/UpdateQuotation', updateData)
@@ -673,8 +657,8 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
     
     $scope.Cancel = function () {
         Swal.fire({
-            title: 'Are you sure?',
-            text: "Changes will not be saved!",
+            title: "Are you sure you don't want to save it?",
+            text: "",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -707,9 +691,9 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
             QuotationNumber: quoNumber
         })
             .then(function (response) {
-                console.log("Data : ", response.data);
+               
                 var QuoNumber = response.data.quotationNumber; 
-                console.log("TEST : " + QuoNumber);
+               
                 Swal.fire({
                     icon: "success",
                     title: "Delete Complete",
@@ -748,7 +732,8 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
 
     // File
 
-    $scope.UploadFile = function () {
+    $scope.UploadFile = function ()
+    {
         var fileInput = document.getElementById('fileInput').files[0];
 
         if (!fileInput) {
@@ -774,8 +759,16 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
             headers: { 'Content-Type': undefined }
         }).then(function (response) {
             // ใช้ $scope.$apply เพื่อกระตุ้น AngularJS ให้จับการเปลี่ยนแปลง
+           
+
+            $scope.files = $scope.files.map(file => {
+                file.createdAt = new Date(file.createdAt);
+                return file;
+            });
+
             $scope.$applyAsync(function () {
-                $scope.files.push(response.data.data); // เพิ่มไฟล์ใหม่ลงในตาราง
+
+                $scope.files.push(response.data.sendFileQuo); // เพิ่มไฟล์ใหม่ลงในตาราง
             });
 
             Swal.fire({
@@ -787,8 +780,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
 
             $scope.fileDescription = ""; // ล้างคำอธิบาย
             document.getElementById('fileInput').value = null; // ล้างไฟล์ที่เลือก
-        }).catch(function (error) {
-            console.error("Error uploading file:", error);
+        }).catch(function () {
             Swal.fire({
                 icon: "error",
                 title: "Upload Failed",
@@ -804,8 +796,8 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
 
     $scope.deleteFile = function (filePath, index) {
         Swal.fire({
-            title: "Are you sure?",
-            text: "This file will be permanently deleted!",
+            title: "Are you sure you want to delete it?",
+            text: "",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -848,7 +840,12 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
             params: { quotationNumber: $scope.QuoData.QuoNumber }
            
         }).then(function (response) {
-            $scope.files = response.data; // เก็บข้อมูลไฟล์ใน $scope.files
+            $scope.files = response.data;
+            //// เก็บข้อมูลไฟล์ใน $scope.files
+            console.log(response.data);
+            
+   
+
         }, function (error) {
             console.error("Error loading files:", error);
         });
@@ -901,11 +898,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         });
     };
 
-    //$scope.loadQuotations = function () {
-    //    $http.get('/Home/GetQuotations').then(function (response) {
-    //        $scope.dataquo = response.data.data; // โหลด Quotation ใหม่
-    //    });
-    //};
+ 
     $scope.backHome = function () {
         $window.location.href = "/Home/Index"; 
     };
@@ -925,13 +918,6 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
             });
     };
 
-    //{
-    //    data: 'shipDate',
-    //        className: 'text-center',
-    //            render: function (data) {
-    //                return new Date(data).toLocaleDateString('th-TH');
-    //            }
-    //}
     function initializeDataTable() {
         $('#orderInfoTable').DataTable({
             destroy: true, // Reinitialize the table if needed
@@ -1016,7 +1002,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         $http.get(`/Home/GetProductOrders?orderNumber=${orderNumber}`)
             .then(function (response) {
                 $scope.productOrders = response.data; // เก็บข้อมูลใน scope
-                console.log($scope.productOrders); // ตรวจสอบข้อมูลใน Console
+               
             }, function (error) {
                 console.error("Error fetching product orders: ", error);
             });
@@ -1033,31 +1019,22 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
             return;
         }
 
-        console.log("Order Number: ", orderNumber);
+        
 
         $scope.GetDataQuoFileTable(orderNumber);
     };
 
     $scope.GetDataQuoFileTable = function (orderNumber) {
 
-
-        //$http.get(`/Home/GetDataQuoFileTables`)
-        //    .then(function (response) {
-        //        $scope.quoFile = response.data; // เก็บข้อมูลใน scope
-        //        console.log($scope.quoFile); // ตรวจสอบข้อมูลใน Console
-        //    }, function (error) {
-        //        console.error("Error QuoFile : ", error);
-        //    });
-
-
+       
 
         $http.get('/Home/GetDataQuoFileTables', { params: { orderNumber: orderNumber } })
             .then(function (response) {
 
-                console.log("Loaded QuoFile Testttttttttt : ", response.data); 
+                
 
-                $scope.quoFile = response.data; // เก็บข้อมูลใน scope
-
+                /*$scope.quoFile = response.data;*/ // เก็บข้อมูลใน scope
+                $scope.quoFile = response.data ;
                 if (Array.isArray($scope.quoFile) && $scope.quoFile.length > 0) {
                     var quotationNumber = $scope.quoFile[0].quotationNumber;
                     $scope.quotationNumber = quotationNumber;
@@ -1071,13 +1048,14 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
             })
             .catch(function (error) {
                 console.error("Error loading QuoFile: ", error);
+                $scope.quoFile = []; // กำหนดค่าเริ่มต้นเมื่อเกิดข้อผิดพลาด
             });
 
 
         $http.get('/Home/GetDataOtherFileTable', { params: { orderNumber: orderNumber } })
             .then(function (response) {
                 $scope.files = response.data; // เก็บข้อมูลใน scope
-                console.log($scope.files); // ตรวจสอบข้อมูลใน Console
+             
             }, function (error) {
                 console.error("Error OtherFile : ", error);
             });
@@ -1102,7 +1080,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
 
     // Upload File AboutOrder -ดูตารางที่ save file ของ Order
     $scope.UploadFileAboutOrder = function () {
-        console.log("TEST FILE")
+       
         var fileInput = document.getElementById("fileInput").files[0];
         if (!fileInput) {
             Swal.fire({
@@ -1128,8 +1106,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
             headers: { "Content-Type": undefined }
         }).then(function (response) {
             // ใช้ $scope.$apply เพื่อกระตุ้น AngularJS ให้จับการเปลี่ยนแปลง
-            //console.log(response.data.sendFile + "show file all");
-            //console.log("Response JSON:", JSON.stringify(response.data));
+      
 
             $scope.files = $scope.files.map(file => {
                 file.createdAt = new Date(file.createdAt);
@@ -1159,10 +1136,7 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
         });
     };
 
-    // ********************
-    //$scope.downloadFileAboutOrder = function (filePath) {
-    //    window.open('/Home/DownloadFile?filePath=' + encodeURIComponent(filePath), '_blank');
-    //};
+
 
     $scope.deleteFileAboutOrder = function (filePath, index) {
         Swal.fire({
@@ -1204,6 +1178,75 @@ app.controller('MyController', function ($scope, $http, $window, $filter) {
     };
 
 
+    // ฟังก์ชันสร้าง DataTable
+    $scope.initializeDataTable = function () {
+        $('#quotationTable').DataTable({
+            destroy: true, // ลบ DataTable เดิมก่อน
+            data: $scope.ListQuo, // ใช้ข้อมูลจาก $scope.ListQuo
+            columns: [
+                { data: 'quotationNumber', className: 'text-center' },
+                { data: 'quoType', className: 'text-center' },
+                { data: 'customerName', className: 'text-center' },
+                { data: 'quoLastname', className: 'text-center' },
+                {
+                    data: 'createDate',
+                    className: 'text-center',
+                    render: function (data) {
+                        return new Date(data).toLocaleDateString('th-TH');
+                    }
+                },
+                {
+                    data: 'quoStatus',
+                    className: 'text-center',
+                    render: function (data) {
+                        return data === 1 ? 'Confirmed' : '';
+                    }
+                },
+                {
+                    data: null,
+                    className: 'text-center',
+                    render: function (data, type, row) {
+                        if (row.quoStatus === 0) {
+                            return `<button class="btn btn-primary edit-button" data-quotation-number="${data.quotationNumber}">Edit</button>`;
+                        } else {
+                            return `<button class="btn btn-secondary edit-button" data-quotation-number="${data.quotationNumber}" disabled>Edit</button>`;
+                        }
+                    }
+                },
+                {
+                    data: null,
+                    className: 'text-center',
+                    render: function (data) {
+                        return `<button class="btn btn-success pdf-button" data-quotation-number="${data.quotationNumber}">PDF</button>`;
+                    }
+                },
+                {
+                    data: null,
+                    className: 'text-center',
+                    render: function (data) {
+                        return `<button class="btn btn-info view-button" data-quotation-number="${data.quotationNumber}">View</button>`;
+                    }
+                }
+            ],
+            order: [[0, 'desc']] // เรียงลำดับ Quotation Number
+        });
+
+        // จัดการ Event Buttons
+        $('#quotationTable').on('click', '.edit-button', function () {
+            const id = $(this).data('quotationNumber');
+            $scope.editQuotation(id);
+        });
+
+        $('#quotationTable').on('click', '.pdf-button', function () {
+            const id = $(this).data('quotationNumber');
+            $scope.PrintPDF(id);
+        });
+
+        $('#quotationTable').on('click', '.view-button', function () {
+            const id = $(this).data('quotationNumber');
+            $scope.viewQuotation(id);
+        });
+    };
 
 
 
